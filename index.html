@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rematch GK Reaction Test</title>
@@ -170,6 +173,22 @@ display:none;align-items:center;justify-content:center;
 </div>
 
 <script>
+  /* ===== FIREBASE INIT (ВСЕГДА САМОЕ ПЕРВОЕ) ===== */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCvTyLXPALNndeJbpa4ogLhIzItG8r_q8",
+  authDomain: "gk-reaction-duel.firebaseapp.com",
+  projectId: "gk-reaction-duel",
+  storageBucket: "gk-reaction-duel.firebasestorage.app",
+  messagingSenderId: "1063652399579",
+  appId: "1:1063652399579:web:af7296294435ae620a6ffe"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+firebase.auth().signInAnonymously();
+
 let mode3Chances = {
   out: 30,
   side: 50,
