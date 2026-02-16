@@ -307,7 +307,7 @@ function startGame(m){
   resetGame();
   startRound();
 }
-$('createDuel').onclick = createDuel;
+
 $('mode1').onclick=()=>startGame(1);
 $('mode2').onclick=()=>startGame(2);
 $('mode3btn').onclick=()=>{
@@ -1269,7 +1269,14 @@ function showDuelWinner(id1, id2, result) {
 
   document.body.appendChild(el);
 }
+// ===== WAIT FOR AUTH BEFORE ENABLE DUEL =====
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) return;
 
+  console.log('Auth ready:', user.uid);
+
+  $('createDuel').onclick = createDuel;
+});
 </script>
 </body>
 </html>
