@@ -232,6 +232,7 @@ let mode3Chances = {
   return rounds;
 }
 async function createDuel() {
+  console.log('🔥 createDuel CALLED');
   const seed = Date.now();
   const rounds = generateDuelRounds(seed);
 
