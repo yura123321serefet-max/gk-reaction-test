@@ -196,13 +196,36 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-const db = firebase.firestore();
+// ❗ НИЧЕГО БОЛЬШЕ НЕ ДЕЛАЕМ ЗДЕСЬ
+firebase.auth().signInAnonymously();
 
-firebase.auth().signInAnonymously()
-  .then(() => {
-    console.log('✅ Anonymous auth OK', firebase.auth().currentUser.uid);
-  })
-  .catch(err => console.error(err));
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) return;
+
+  console.log('✅ AUTH READY:', user.uid);
+
+  // 🔥 ТОЛЬКО ТУТ
+  window.db = firebase.firestore();
+
+  // 🔥 ТОЛЬКО ТУТ ВКЛЮЧАЕМ ДУЭЛЬ
+  document.getElementById('createDuel').onclick = createDuel;
+
+  // 🔥 ЕСЛИ ЗАШЛИ ПО ССЫЛКЕ
+  if (duelParam) {
+    duelId = duelParam;
+    duelMode = true;
+
+    db.collection('duels').doc(duelId).get().then(doc => {
+      if (!doc.exists) {
+        alert('Дуэль не найдена');
+        return;
+      }
+      duelRounds = doc.data().rounds;
+      duelIndex = 0;
+      startGame(3);
+    });
+  }
+});
 
   // ===== DUEL STATE =====
 let duelMode = false;   // мы в дуэли или нет
@@ -1059,7 +1082,12 @@ function calculateDuelScore(p1, p2) {
 
 function showResults(){
   if (duelMode && duelId) {
-  const uid = firebase.auth().currentUser.uid;
+  const user = firebase.auth().currentUser;
+if (!user) {
+  console.warn('⏳ Auth not ready yet');
+  return;
+}
+const uid = user.uid;
   const results = getDuelResults();
 
   db.collection('duels').doc(duelId).update({
@@ -1278,14 +1306,7 @@ function showDuelWinner(id1, id2, result) {
 
   document.body.appendChild(el);
 }
-// ===== WAIT FOR AUTH BEFORE ENABLE DUEL =====
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) return;
 
-  console.log('Auth ready:', user.uid);
-
-  $('createDuel').onclick = createDuel;
-});
 </script>
 
 
