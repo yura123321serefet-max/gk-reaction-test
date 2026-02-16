@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+ 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rematch GK Reaction Test</title>
@@ -176,8 +174,12 @@ display:none;align-items:center;justify-content:center;
 <div id="resultsOverlay">
   <div id="resultsContent"></div>
 </div>
-
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
+  
   const $ = id => document.getElementById(id);
   
   let duelFinished = false;
@@ -195,7 +197,13 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
-firebase.auth().signInAnonymously();
+
+firebase.auth().signInAnonymously()
+  .then(() => {
+    console.log('✅ Anonymous auth OK', firebase.auth().currentUser.uid);
+  })
+  .catch(err => console.error(err));
+
   // ===== DUEL STATE =====
 let duelMode = false;   // мы в дуэли или нет
 let duelId = null;      // id дуэли из Firestore
@@ -1279,5 +1287,7 @@ firebase.auth().onAuthStateChanged(user => {
   $('createDuel').onclick = createDuel;
 });
 </script>
+
+
 </body>
 </html>
