@@ -109,7 +109,9 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 </style>
 
 </head>
-<div id="mode3Settings" style="
+
+<body>
+  <div id="mode3Settings" style="
 position:fixed;inset:0;z-index:1500;
 background:rgba(10,10,15,.97);
 display:none;align-items:center;justify-content:center;
@@ -146,7 +148,6 @@ display:none;align-items:center;justify-content:center;
   </div>
 </div>
 
-<body>
 
 <div id="menu">
   <button class="menu-btn" id="createDuel">
@@ -177,6 +178,8 @@ display:none;align-items:center;justify-content:center;
 </div>
 
 <script>
+  const $ = id => document.getElementById(id);
+  
   let duelFinished = false;
   /* ===== FIREBASE INIT (ВСЕГДА САМОЕ ПЕРВОЕ) ===== */
 
@@ -251,7 +254,7 @@ async function createDuel() {
   startGame(3);
 }
 
-$('createDuel').onclick = createDuel;
+
 
 
 const $=id=>document.getElementById(id);
