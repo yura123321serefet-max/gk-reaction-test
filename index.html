@@ -257,7 +257,7 @@ async function createDuel() {
 
 
 
-const $=id=>document.getElementById(id);
+
 let mode=1,attempts=0,maxAttempts=5;
 let target=null,signalTime=0;
 let waiting=false,recording=false;
@@ -307,7 +307,7 @@ function startGame(m){
   resetGame();
   startRound();
 }
-
+$('createDuel').onclick = createDuel;
 $('mode1').onclick=()=>startGame(1);
 $('mode2').onclick=()=>startGame(2);
 $('mode3btn').onclick=()=>{
