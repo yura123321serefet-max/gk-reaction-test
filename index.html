@@ -146,10 +146,6 @@ display:none;align-items:center;justify-content:center;
 <body>
 
 <div id="menu">
-  <button class="menu-btn" id="duelBtn">
-  Дуэль
-  <span>Игра против друга</span>
-</button>
   <h1>GK Reaction Test</h1>
   <p>Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. Направление должно быть нажато до или одновременно с прыжком. На таймлайне видны все нажатия — включая до сигнала.</p>
   <button class="menu-btn" id="mode1">Режим 1 — Сигнал<span>Сторона подсвечивается</span></button>
@@ -172,7 +168,7 @@ display:none;align-items:center;justify-content:center;
 <div id="resultsOverlay">
   <div id="resultsContent"></div>
 </div>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
 <script>
 let mode3Chances = {
   out: 30,
@@ -181,22 +177,6 @@ let mode3Chances = {
 };
 
 const $=id=>document.getElementById(id);
-  // ===== DUEL STATE =====
-let peer = null;
-let conn = null;
-let isHost = false;
-let duelRounds = [];
-let duelRoundIndex = 0;
-
-let duelResults = {
-  me: [],
-  enemy: []
-};
-
-let duelScore = {
-  me: 0,
-  enemy: 0
-};
 let mode=1,attempts=0,maxAttempts=5;
 let target=null,signalTime=0;
 let waiting=false,recording=false;
@@ -217,20 +197,12 @@ const tolerance=20;
 let roundNeedsSpace=false;
 
 function resetGame(){
-  attempts = 0;
-  roundData = [];
-  reactions = [];
-
-  $('hud').innerHTML = '';
-  $('info').textContent = '';
+  attempts=0;roundData=[];reactions=[];
+  $('hud').innerHTML='';$('info').textContent='';
   $('resultsOverlay').classList.remove('show');
-  $('left').classList.remove('active');
-  $('right').classList.remove('active');
-  $('ball').style.display = 'none';
-
-  recording = false;
-  waiting = false;
-
+  $('left').classList.remove('active');$('right').classList.remove('active');
+  $('ball').style.display='none';
+  recording=false;waiting=false;
   buildHud();
 }
 
@@ -261,175 +233,7 @@ $('mode3btn').onclick=()=>{
   $('menu').style.display='none';
   $('mode3Settings').style.display='flex';
 };
-function createDuel(){
-  isHost = true;
-  peer = new Peer();
 
-  peer.on('open', id => {
-    const link = `${location.origin}${location.pathname}?duel=${id}`;
-
-    navigator.clipboard.writeText(link).then(() => {
-      alert(
-        'Ссылка скопирована в буфер обмена ✅\n\n' +
-        'Просто вставь её другу (Ctrl + V)\n\n' +
-        link
-      );
-    });
-  });
-
-  peer.on('connection', c => {
-    conn = c;
-    setupDuelConnection();
-    startDuelAsHost();
-  });
-}
-  function joinDuel(roomId){
-  isHost = false;
-  peer = new Peer();
-
-  peer.on('open', () => {
-    conn = peer.connect(roomId);
-    setupDuelConnection();
-  });
-}
-  function setupDuelConnection(){
-  conn.on('data', data => {
-
-    if(data.type === 'init'){
-      duelRounds = data.rounds;
-      duelRoundIndex = 0;
-      startDuelGame();
-    }
-
-    if(data.type === 'roundResult'){
-      duelResults.enemy[data.round] = data.result;
-      checkRoundFinish(data.round);
-    }
-
-    if(data.type === 'rematch'){
-      resetDuel();
-      startDuelGame();
-    }
-
-    if(data.type === 'exit'){
-      backToMenu();
-    }
-  });
-}
-  function generateDuelRounds(){
-  const arr = [];
-  for(let i=0;i<15;i++){
-    arr.push({
-      target: getRandomMode3Target(),
-      delay: Math.random()*1500 + 600
-    });
-  }
-  return arr;
-}
-function startDuelAsHost(){
-  duelRounds = generateDuelRounds();
-  conn.send({
-    type: 'init',
-    rounds: duelRounds
-  });
-  startDuelGame();
-}
-  function startDuelGame(){
-  mode = 3;
-  maxAttempts = 15;
-  attempts = 0;
-  duelRoundIndex = 0;
-  duelResults = { me: [], enemy: [] };
-  duelScore = { me: 0, enemy: 0 };
-
-  $('menu').style.display = 'none';
-  $('gameArea').style.display = 'none';
-  $('mode3Area').style.display = 'block';
-
-  initMode3Canvas();
-  resizeMode3();        // ✅
-  drawMode3Scene();     // ✅
-
-  startDuelRound();
-}
-
-  function startDuelRound(){
-  if(duelRoundIndex >= 15){
-    showDuelResults();
-    return;
-  }
-
-  const r = duelRounds[duelRoundIndex];
-
-  setTimeout(()=>{
-  target = r.target;
-  signalTime = performance.now();
-
-  recording = true;        // ✅
-  waiting = true;          // ✅
-  m3SpacePressed = false;
-  firstDir = null;
-  spaceTime = null;
-
-  animateBallMode3(target, ()=>{});
-}, r.delay);
-}
-  function checkRoundFinish(i){
-  if(!isHost) return;
-
-  const a = duelResults.me[i];
-  const b = duelResults.enemy[i];
-  if(!a || !b) return;
-
-  if(a.ok && !b.ok) duelScore.me++;
-  else if(!a.ok && b.ok) duelScore.enemy++;
-  else if(a.ok && b.ok){
-    if(a.reactionMs < b.reactionMs) duelScore.me++;
-    else if(b.reactionMs < a.reactionMs) duelScore.enemy++;
-  }
-
-  duelRoundIndex++;   // ✅ ТОЛЬКО ЗДЕСЬ
-  startDuelRound();
-}
-  function showDuelResults(){
-  $('resultsOverlay').classList.add('show');
-
-  const win =
-    duelScore.me > duelScore.enemy ? 'Ты победил 🎉' :
-    duelScore.enemy > duelScore.me ? 'Ты проиграл 😭' :
-    'Ничья 🤝';
-
-  $('resultsContent').innerHTML = `
-    <div class="res-title">${win}</div>
-    <div class="res-avg">
-      Ты: ${duelScore.me} · Друг: ${duelScore.enemy}
-    </div>
-    <div class="btn-row">
-      <button class="restart-btn" onclick="duelRematch()">Играть ещё раз</button>
-      <button class="back-btn" onclick="duelExit()">В меню</button>
-    </div>
-  `;
-}
-  function duelRematch(){
-  conn.send({ type:'rematch' });
-  resetDuel();
-  startDuelGame();
-}
-
-function duelExit(){
-  if(conn) conn.close();
-  if(peer) peer.destroy();
-  conn = null;
-  peer = null;
-  backToMenu();
-}
-
-function resetDuel(){
-  duelRoundIndex = 0;
-  duelResults = { me: [], enemy: [] };
-  duelScore = { me: 0, enemy: 0 };
-}
-  $('duelBtn').onclick = createDuel;
 // ===================== MODE 3 — 3D CANVAS =====================
 // Camera is ABOVE the crossbar, looking DOWN onto the pitch.
 // So the top of the screen = closer to camera (wider), bottom = further away (narrower, the goal line on the ground).
@@ -1084,28 +888,10 @@ function evaluateMode3(){
     segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})),
     targetLabel
   });
-if(conn){
-  const res = {
-    ok,
-    reactionMs: ok ? reaction : null
-  };
 
-  duelResults.me[duelRoundIndex] = res;
-
-  conn.send({
-    type: 'roundResult',
-    round: duelRoundIndex,
-    result: res
-  });
-
- 
-}
   attempts++;
   $('info').textContent=(ok?'✅ ':'❌ ')+result;
- if(!conn){
-  // обычный режим
-  setTimeout(startRound, 900);
-}
+  setTimeout(startRound,900);
 }
 
 function evaluate(){
@@ -1279,11 +1065,7 @@ $('startMode3').onclick = () => {
   $('mode3Settings').style.display = 'none';
   startGame(3);
 };
-const params = new URLSearchParams(location.search);
-if(params.has('duel')){
-  $('menu').style.display = 'none';
-  joinDuel(params.get('duel'));
-}
+
 </script>
 </body>
 </html>
