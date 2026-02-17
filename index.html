@@ -147,6 +147,10 @@ display:none;align-items:center;justify-content:center;
 
 <div id="menu">
   <h1>GK Reaction Test</h1>
+  <button class="menu-btn" id="mode4">
+  Режим 4 — Дуэль 1v1
+  <span>Онлайн · 15 раундов</span>
+</button>
   <p>Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. Направление должно быть нажато до или одновременно с прыжком. На таймлайне видны все нажатия — включая до сигнала.</p>
   <button class="menu-btn" id="mode1">Режим 1 — Сигнал<span>Сторона подсвечивается</span></button>
   <button class="menu-btn" id="mode2">Режим 2 — Мяч<span>Мяч летит в угол</span></button>
@@ -168,8 +172,31 @@ display:none;align-items:center;justify-content:center;
 <div id="resultsOverlay">
   <div id="resultsContent"></div>
 </div>
+  <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyChqX2Wj9A377JxIqVajrQgkHz61YhxBxg",
+  authDomain: "gk-duel.firebaseapp.com",
+  projectId: "gk-duel",
+  storageBucket: "gk-duel.firebasestorage.app",
+  messagingSenderId: "695005000763",
+  appId: "1:695005000763:web:ab088646cd01e7461ed81e"
+};
+  const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
+window.db = db;
+window.ref = ref;
+window.set = set;
+window.update = update;
+window.onValue = onValue;
+</script>
 <script>
+  let duelMode = false;
+let roomId = null;
+let playerId = null; // "p1" или "p2"
+let currentRound = 0;
 let mode3Chances = {
   out: 30,
   side: 50,
@@ -233,6 +260,41 @@ $('mode3btn').onclick=()=>{
   $('menu').style.display='none';
   $('mode3Settings').style.display='flex';
 };
+  $('mode4').onclick = () => {
+  duelMode = true;
+  createRoom();
+};
+  function createRoom(){
+  // 1. Генерируем короткий ID комнаты
+  roomId = Math.random()
+    .toString(36)
+    .substring(2, 8)
+    .toUpperCase();
+
+  // 2. Мы — первый игрок
+  playerId = "p1";
+
+  // 3. Создаём комнату в Firebase
+  set(ref(db, 'rooms/' + roomId), {
+    status: "waiting",
+    round: 0,
+    players: {
+      p1: { score: 0 },
+      p2: { score: 0 }
+    }
+  });
+
+  // 4. Показываем ссылку другу
+  alert(
+    "Отправь эту ссылку другу:\n\n" +
+    location.origin +
+    location.pathname +
+    "?room=" + roomId
+  );
+
+  // 5. Начинаем слушать комнату
+  listenRoom();
+}
 
 // ===================== MODE 3 — 3D CANVAS =====================
 // Camera is ABOVE the crossbar, looking DOWN onto the pitch.
@@ -1065,6 +1127,7 @@ $('startMode3').onclick = () => {
   $('mode3Settings').style.display = 'none';
   startGame(3);
 };
+  <script type="module">
 
 </script>
 </body>
