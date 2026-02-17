@@ -3,56 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rematch GK Reaction Test</title>
+<title>Rematch GK Reaction Test + Duel</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
-:root{
-  --accent:#00e5ff;--purple:#7c4dff;--bg:#0a0a0f;--card:#14141f;
-  --border:#1e1e2e;--success:#00e676;--fail:#ff3d71;--warn:#ffab00;
-}
-
+:root{ --accent:#00e5ff;--purple:#7c4dff;--bg:#0a0a0f;--card:#14141f; --border:#1e1e2e;--success:#00e676;--fail:#ff3d71;--warn:#ffab00; }
 #menu{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:1000}
 #menu h1{font-size:42px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 #menu p{color:#888;font-size:14px;max-width:420px;text-align:center;line-height:1.6}
-.menu-btn{
-  padding:16px 36px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700;
-  border:2px solid var(--border);border-radius:12px;background:var(--card);color:#fff;
-  cursor:pointer;transition:all .2s;min-width:280px;
-}
+.menu-btn{ padding:16px 36px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700; border:2px solid var(--border);border-radius:12px;background:var(--card);color:#fff; cursor:pointer;transition:all .2s;min-width:280px; }
 .menu-btn:hover{border-color:var(--accent);box-shadow:0 0 24px rgba(0,229,255,.15);transform:translateY(-2px)}
 .menu-btn span{color:#888;font-weight:300;font-size:14px;display:block;margin-top:4px}
-
 #gameArea{flex:1;display:flex;position:relative;overflow:hidden}
 .side{flex:1;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:900;font-family:'JetBrains Mono',monospace;opacity:.06;transition:all .15s;user-select:none;letter-spacing:4px}
 .side.active{opacity:1;color:#000}
 #left.active{background:var(--accent)}
 #right.active{background:var(--accent)}
-
 #ball{position:absolute;width:36px;height:36px;border-radius:50%;background:#fff;left:50%;top:0%;transform:translate(-50%,0%);display:none;box-shadow:0 0 20px rgba(255,255,255,.5);z-index:10}
 
-#hud{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:50;flex-wrap:wrap;justify-content:center;max-width:90vw}
+/* Изменен HUD для поддержки счета дуэли */
+#hudWrapper{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:90vw}
+#duelScore{display:none; font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:900; background:rgba(0,0,0,0.5); padding:5px 15px; border-radius:8px; border:1px solid var(--accent);}
+#hud{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+
 .dot{width:14px;height:14px;border-radius:50%;border:2px solid #333;transition:all .3s}
 .dot.success{background:var(--success);border-color:var(--success);box-shadow:0 0 8px var(--success)}
 .dot.fail{background:var(--fail);border-color:var(--fail);box-shadow:0 0 8px var(--fail)}
 .dot.current{border-color:var(--accent);box-shadow:0 0 8px var(--accent)}
+.dot.draw{background:var(--warn);border-color:var(--warn);opacity:0.7;} /* Для ничьей в дуэли */
 
 #info{position:fixed;bottom:16px;width:100%;text-align:center;font-size:16px;font-family:'JetBrains Mono',monospace;color:#888;z-index:50;pointer-events:none}
-
 #resultsOverlay{position:fixed;inset:0;background:rgba(10,10,15,.97);z-index:2000;display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 20px}
 #resultsOverlay.show{display:flex}
 #resultsContent{max-width:720px;width:100%}
 .res-title{font-size:36px;font-weight:900;text-align:center;margin-bottom:8px;letter-spacing:-1px}
 .res-avg{text-align:center;font-size:20px;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-bottom:32px}
-
 .round-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px}
 .round-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:4px}
 .round-num{font-weight:700;font-size:14px;color:#888}
 .round-result{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
 .round-result.ok{color:var(--success)}
 .round-result.err{color:var(--fail)}
-
 .timeline-wrap{position:relative;height:64px;background:#0d0d18;border-radius:8px;overflow:hidden;border:1px solid #1a1a2a}
 .tl-axis{position:absolute;top:50%;left:0;right:0;height:1px;background:#222}
 .tl-signal-line{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.25);z-index:2}
@@ -66,1070 +60,620 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 .tl-marker.signal-mk{background:#fff;box-shadow:0 0 8px #fff}
 .tl-marker.space-mk{background:var(--warn);box-shadow:0 0 6px var(--warn)}
 .tl-prezone{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.03);z-index:1;border-right:1px dashed rgba(255,255,255,.12)}
-
 .tl-legend{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap}
 .tl-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#888;font-family:'JetBrains Mono',monospace}
 .tl-legend-item .sw{width:14px;height:6px;border-radius:2px;flex-shrink:0}
 .tl-legend-item .sw.circle{width:7px;height:7px;border-radius:50%}
-
 .btn-row{display:flex;flex-direction:column;align-items:center;margin-top:32px;gap:10px;padding-bottom:40px}
-.restart-btn{
-  padding:16px 48px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700;
-  border:2px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent);
-  cursor:pointer;transition:all .2s;
-}
+.restart-btn{ padding:16px 48px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700; border:2px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent); cursor:pointer;transition:all .2s; }
 .restart-btn:hover{background:var(--accent);color:#000}
-.back-btn{
-  padding:12px 32px;font-size:14px;font-family:'Outfit',sans-serif;font-weight:500;
-  border:1px solid var(--border);border-radius:8px;background:transparent;color:#888;
-  cursor:pointer;transition:all .2s;
-}
+.back-btn{ padding:12px 32px;font-size:14px;font-family:'Outfit',sans-serif;font-weight:500; border:1px solid var(--border);border-radius:8px;background:transparent;color:#888; cursor:pointer;transition:all .2s; }
 .back-btn:hover{border-color:#888;color:#fff}
-
 /* ===== MODE 3 ===== */
 #mode3Area{position:fixed;inset:0;display:none;overflow:hidden;z-index:40}
 #mode3Canvas{width:100%;height:100%;display:block}
-.sliderRow{
-  margin-bottom:16px;
+.sliderRow{ margin-bottom:16px; }
+.sliderRow label{ display:flex; justify-content:space-between; margin-bottom:6px; font-size:14px; color:#aaa; }
+.sliderRow input{ width:100%; }
+
+/* ===== DUEL LOBBY CSS ===== */
+#duelLobby{
+    position:fixed;inset:0;z-index:1600; background:var(--bg);
+    display:none; flex-direction:column; align-items:center; justify-content:center;
 }
-.sliderRow label{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:6px;
-  font-size:14px;
-  color:#aaa;
+.lobby-card{
+    background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px;
+    width:500px; max-width:95vw; text-align:center;
 }
-.sliderRow input{
-  width:100%;
+#duelLinkInput{
+    width:100%; padding:12px; margin:16px 0; background:#0a0a0f; border:1px solid var(--border);
+    color:var(--accent); font-family:'JetBrains Mono', monospace; font-size:14px; border-radius:8px;
 }
+.duel-status{ margin: 20px 0; font-weight:bold; color: var(--warn); min-height: 24px;}
 
 </style>
-
 </head>
+
+<div id="mode3Settings" style="position:fixed;inset:0;z-index:1500;background:rgba(10,10,15,.97);display:none;align-items:center;justify-content:center;">
+<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:420px;max-width:90vw;">
+<h2 style="font-size:28px;margin-bottom:16px">Настройка ударов (Соло)</h2>
+<div class="sliderRow"><label>Мимо ворот: <b><span id="pOut">30</span>%</b></label><input type="range" min="0" max="100" value="30" id="outRange"></div>
+<div class="sliderRow"><label>В створ (углы): <b><span id="pSide">50</span>%</b></label><input type="range" min="0" max="100" value="50" id="sideRange"></div>
+<div class="sliderRow"><label>По центру: <b><span id="pCenter">20</span>%</b></label><input type="range" min="0" max="100" value="20" id="centerRange"></div>
+<button class="menu-btn" style="margin-top:20px" id="startMode3">ОК <span>Запустить режим</span></button>
+</div>
+</div>
+
+<div id="duelLobby">
+    <div class="lobby-card" id="lobbyHost" style="display:none;">
+        <h2>Создание дуэли 1x1</h2>
+        <p>Отправь эту ссылку сопернику. Игра начнется, когда он подключится.</p>
+        <input type="text" id="duelLinkInput" readonly>
+        <div class="duel-status" id="hostStatus">Ожидание подключения...</div>
+         <button class="back-btn" onclick="exitDuelLobby()">Отмена</button>
+    </div>
+    <div class="lobby-card" id="lobbyJoin" style="display:none;">
+        <h2>Подключение к дуэли...</h2>
+        <div class="duel-status" id="joinStatus">Ищем комнату...</div>
+    </div>
+</div>
 
 
 <body>
-  <div id="mode3Settings" style="
-position:fixed;inset:0;z-index:1500;
-background:rgba(10,10,15,.97);
-display:none;align-items:center;justify-content:center;
-">
-  <div style="
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:32px;
-  width:420px;
-  max-width:90vw;
-  ">
-    <h2 style="font-size:28px;margin-bottom:16px">Настройка ударов</h2>
-
-    <div class="sliderRow">
-      <label>Мимо ворот: <b><span id="pOut">30</span>%</b></label>
-      <input type="range" min="0" max="100" value="30" id="outRange">
-    </div>
-
-    <div class="sliderRow">
-      <label>В створ (углы): <b><span id="pSide">50</span>%</b></label>
-      <input type="range" min="0" max="100" value="50" id="sideRange">
-    </div>
-
-    <div class="sliderRow">
-      <label>По центру: <b><span id="pCenter">20</span>%</b></label>
-      <input type="range" min="0" max="100" value="20" id="centerRange">
-    </div>
-
-    <button class="menu-btn" style="margin-top:20px" id="startMode3">
-      ОК
-      <span>Запустить режим</span>
-    </button>
-  </div>
-</div>
-
 <div id="menu">
-  <h1>GK Reaction Test</h1>
-  
-  <p>Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. Направление должно быть нажато до или одновременно с прыжком. На таймлайне видны все нажатия — включая до сигнала.</p>
-  <button class="menu-btn" id="mode1">Режим 1 — Сигнал<span>Сторона подсвечивается</span></button>
-  <button class="menu-btn" id="mode2">Режим 2 — Мяч<span>Мяч летит в угол</span></button>
-  <button class="menu-btn" id="mode3btn">Режим 3 — Ворота 3D<span>Мяч летит на тебя · 15 раундов · A/D/W+Space или не прыгай</span></button>
-  <button class="menu-btn" id="mode4">
-  Режим 4 — Дуэль 1v1
-  <span>Онлайн · 15 раундов</span>
-</button>
+<h1>GK Reaction Test</h1>
+<p>Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. В режиме 3D используй <b>W</b> для центра или не прыгай, если мимо.</p>
+<button class="menu-btn" id="mode1">Режим 1 — Сигнал<span>Сторона подсвечивается</span></button>
+<button class="menu-btn" id="mode2">Режим 2 — Мяч<span>Мяч летит в угол</span></button>
+<button class="menu-btn" id="mode3btn">Режим 3 — Ворота 3D (Соло)<span>Мяч летит на тебя · 15 раундов</span></button>
+<button class="menu-btn" id="mode4btn" style="border-color:var(--purple)">Режим 4 — Дуэль 1x1<span>Онлайн · 15 раундов · Одинаковые удары</span></button>
 </div>
 
-<div id="hud"></div>
+<div id="hudWrapper">
+    <div id="duelScore"><span style="color:var(--accent)">YOU</span> 0 : 0 <span style="color:var(--fail)">OPP</span></div>
+    <div id="hud"></div>
+</div>
+
 <div id="gameArea">
-  <div id="left" class="side">A</div>
-  <div id="right" class="side">D</div>
-  <div id="ball"></div>
+<div id="left" class="side">A</div>
+<div id="right" class="side">D</div>
+<div id="ball"></div>
 </div>
 <div id="info"></div>
-
 <div id="mode3Area">
-  <canvas id="mode3Canvas"></canvas>
+<canvas id="mode3Canvas"></canvas>
 </div>
-
 <div id="resultsOverlay">
-  <div id="resultsContent"></div>
+<div id="resultsContent"></div>
 </div>
-  <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyChqX2Wj9A377JxIqVajrQgkHz61YhxBxg",
-  authDomain: "gk-duel.firebaseapp.com",
-  projectId: "gk-duel",
-  storageBucket: "gk-duel.firebasestorage.app",
-  messagingSenderId: "695005000763",
-  appId: "1:695005000763:web:ab088646cd01e7461ed81e"
-};
-  const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 
-window.db = db;
-window.ref = ref;
-window.set = set;
-window.update = update;
-window.onValue = onValue;
-</script>
 <script>
-  let duelMode = false;
-let roomId = null;
-let playerId = null; // "p1" или "p2"
-let currentRound = 0;
-let mode3Chances = {
-  out: 30,
-  side: 50,
-  center: 20
-};
-
+let mode3Chances = { out: 30, side: 50, center: 20 };
 const $=id=>document.getElementById(id);
 let mode=1,attempts=0,maxAttempts=5;
 let target=null,signalTime=0;
 let waiting=false,recording=false;
-
 let roundStartTime=0;
 let firstDir=null,firstDirTime=null;
 let spaceTime=null;
-
 let allKeyDowns={};
 let allKeySegments=[];
 let allSpacePresses=[];
-
 let roundData=[];
 let reactions=[];
 const tolerance=20;
-
-// Explicit per-round flag: does this round's ball go into goal?
 let roundNeedsSpace=false;
 
+// --- DUEL GLOBAL VARIABLES ---
+const Duel = {
+    active: false,
+    peer: null,
+    conn: null,
+    isHost: false,
+    roundsTotal: 15,
+    targets: [], // Список целей на всю игру
+    currentRoundData: null, // Мой результат текущего раунда
+    opponentRoundData: null, // Результат соперника
+    myScore: 0,
+    oppScore: 0,
+    opponentReactions: [] // Для итоговой статистики
+};
+
+// --- INIT ---
+function init() {
+    // Проверка, открыта ли игра по ссылке-приглашению
+    const urlParams = new URLSearchParams(window.location.search);
+    const duelId = urlParams.get('duel');
+    if (duelId) {
+        joinDuel(duelId);
+    }
+}
+
+// --- GAME CONTROL ---
 function resetGame(){
-  attempts=0;roundData=[];reactions=[];
-  $('hud').innerHTML='';$('info').textContent='';
-  $('resultsOverlay').classList.remove('show');
-  $('left').classList.remove('active');$('right').classList.remove('active');
-  $('ball').style.display='none';
-  recording=false;waiting=false;
-  buildHud();
+    attempts=0;roundData=[];reactions=[];
+    $('hud').innerHTML='';$('info').textContent='';
+    $('resultsOverlay').classList.remove('show');
+    $('left').classList.remove('active');$('right').classList.remove('active');
+    $('ball').style.display='none';
+    recording=false;waiting=false;
+    // Duel resets
+    if(!Duel.active) {
+       $('duelScore').style.display = 'none';
+    } else {
+        // В дуэли HUD обновляется иначе
+        $('duelScore').style.display = 'block';
+        updateDuelScoreUI();
+    }
+    buildHud();
 }
 
 function buildHud(){
-  let h='';for(let i=0;i<maxAttempts;i++) h+=`<div class="dot" id="dot${i}"></div>`;
-  $('hud').innerHTML=h;
+    let h='';for(let i=0;i<maxAttempts;i++) h+=`<div class="dot" id="dot${i}"></div>`;
+    $('hud').innerHTML=h;
 }
 
 function startGame(m){
-  mode=m;
-  maxAttempts = (mode===3) ? 15 : 5;
-  $('menu').style.display='none';
-  if(mode===3){
-    $('gameArea').style.display='none';
-    $('mode3Area').style.display='block';
-    initMode3Canvas();
-  } else {
-    $('gameArea').style.display='flex';
-    $('mode3Area').style.display='none';
-  }
-  resetGame();
-  startRound();
+    mode=m;
+    maxAttempts = (mode===3 || mode===4) ? 15 : 5;
+    $('menu').style.display='none';
+    if(mode===3 || mode===4){
+        $('gameArea').style.display='none';
+        $('mode3Area').style.display='block';
+        initMode3Canvas();
+        // Для соло режима применяем настройки шансов
+        if(mode===3) applyMode3Settings();
+    } else {
+        $('gameArea').style.display='flex';
+        $('mode3Area').style.display='none';
+    }
+    resetGame();
+
+    // В дуэли старт контролируется хостом через сетевые события
+    if(mode !== 4) {
+        startRound();
+    }
 }
 
 $('mode1').onclick=()=>startGame(1);
 $('mode2').onclick=()=>startGame(2);
+// Mode 3 Соло - открываем настройки
 $('mode3btn').onclick=()=>{
-  $('menu').style.display='none';
-  $('mode3Settings').style.display='flex';
+    $('menu').style.display='none';
+    $('mode3Settings').style.display='flex';
 };
-  $('mode4').onclick = () => {
-  duelMode = true;
-  createRoom();
+// Mode 4 Дуэль - открываем лобби хоста
+$('mode4btn').onclick=()=>hostDuel();
+
+// Настройки режима 3
+$('outRange').oninput=function(){$('pOut').textContent=this.value;};
+$('sideRange').oninput=function(){$('pSide').textContent=this.value;};
+$('centerRange').oninput=function(){$('pCenter').textContent=this.value;};
+function applyMode3Settings(){
+    mode3Chances.out = parseInt($('outRange').value);
+    mode3Chances.side = parseInt($('sideRange').value);
+    mode3Chances.center = parseInt($('centerRange').value);
+}
+$('startMode3').onclick=()=>{
+    $('mode3Settings').style.display='none';
+    startGame(3);
 };
-  function createRoom(){
-  // 1. Генерируем короткий ID комнаты
-  roomId = Math.random()
-    .toString(36)
-    .substring(2, 8)
-    .toUpperCase();
 
-  // 2. Мы — первый игрок
-  playerId = "p1";
 
-  // 3. Создаём комнату в Firebase
-  set(ref(db, 'rooms/' + roomId), {
-    status: "waiting",
-    round: 0,
-    players: {
-      p1: { score: 0 },
-      p2: { score: 0 }
-    }
-  });
+// ===================== DUEL NETWORKING (PEERJS) =====================
 
-  // 4. Показываем ссылку другу
-  alert(
-    "Отправь эту ссылку другу:\n\n" +
-    location.origin +
-    location.pathname +
-    "?room=" + roomId
-  );
-
-  // 5. Начинаем слушать комнату
-  listenRoom();
+function initPeer(callback) {
+    if(Duel.peer) { if(callback) callback(); return; }
+    // Используем публичный облачный сервер PeerJS
+    Duel.peer = new Peer();
+    Duel.peer.on('open', (id) => {
+        console.log('My Peer ID is: ' + id);
+        if(callback) callback(id);
+    });
+    Duel.peer.on('connection', (conn) => {
+        // Входящее соединение (для хоста)
+        handleConnection(conn);
+    });
+    Duel.peer.on('error', (err) => {
+        alert('Ошибка соединения: ' + err.type);
+        exitDuelLobby();
+    });
 }
 
-// ===================== MODE 3 — 3D CANVAS =====================
-// Camera is ABOVE the crossbar, looking DOWN onto the pitch.
-// So the top of the screen = closer to camera (wider), bottom = further away (narrower, the goal line on the ground).
-// The crossbar is at the TOP (wide), the ground line at the BOTTOM (narrow).
-// Think: you're standing behind the goal, looking over the crossbar down at the pitch.
-// The ball comes FROM the pitch (bottom/center) and flies TOWARDS the goal (upward on screen).
 
+function hostDuel() {
+    $('menu').style.display='none';
+    $('#duelLobby').style.display='flex';
+    $('#lobbyHost').style.display='block';
+    $('#hostStatus').textContent = "Инициализация...";
+
+    Duel.isHost = true;
+    initPeer((id) => {
+        const link = `${window.location.origin}${window.location.pathname}?duel=${id}`;
+        $('duelLinkInput').value = link;
+        $('#hostStatus').textContent = "Ожидание подключения соперника...";
+        // Копируем в буфер для удобства
+        navigator.clipboard.writeText(link).then(() => {
+             $('#hostStatus').textContent += " (Ссылка скопирована!)";
+        }).catch(()=>{});
+    });
+}
+
+function joinDuel(hostId) {
+    $('menu').style.display='none';
+    $('#duelLobby').style.display='flex';
+    $('#lobbyHost').style.display='none';
+    $('#lobbyJoin').style.display='block';
+
+    Duel.isHost = false;
+    initPeer(() => {
+        const conn = Duel.peer.connect(hostId);
+        handleConnection(conn);
+    });
+}
+
+function handleConnection(conn) {
+    Duel.conn = conn;
+    Duel.active = true;
+
+    conn.on('open', () => {
+        console.log("Connected to peer!");
+        if(Duel.isHost) {
+            $('#hostStatus').textContent = "Соперник подключен! Запуск...";
+            // Хост генерирует сценарий игры и отправляет клиенту
+            Duel.targets = generateDuelTargets(Duel.roundsTotal);
+            conn.send({ type: 'GAME_START', targets: Duel.targets });
+            // Небольшая задержка перед стартом у хоста
+            setTimeout(() => {
+                $('#duelLobby').style.display='none';
+                startGame(4);
+                startDuelRoundProcess();
+            }, 1000);
+        } else {
+            $('#joinStatus').textContent = "Подключено! Ожидание старта...";
+        }
+    });
+
+    conn.on('data', (data) => {
+        handleIncomingData(data);
+    });
+     conn.on('close', () => {
+        alert("Соединение разорвано.");
+        backToMenu();
+    });
+}
+
+function handleIncomingData(data) {
+    switch(data.type) {
+        case 'GAME_START':
+            if(!Duel.isHost) {
+                 Duel.targets = data.targets;
+                 $('#duelLobby').style.display='none';
+                 startGame(4);
+                 // Клиент начинает, как только получил цели
+                 startDuelRoundProcess();
+            }
+            break;
+        case 'ROUND_RESULT':
+            Duel.opponentRoundData = data.result;
+            checkDuelRoundComplete();
+            break;
+    }
+}
+
+function exitDuelLobby() {
+    if(Duel.peer) { Duel.peer.destroy(); Duel.peer = null; }
+    Duel.active = false;
+    $('#duelLobby').style.display='none';
+    $('#lobbyHost').style.display='none';
+    $('#lobbyJoin').style.display='none';
+    $('menu').style.display='flex';
+    // Очистка URL от параметра дуэли
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+// Генерация списка целей для дуэли (чтобы у обоих было одинаково)
+function generateDuelTargets(count) {
+    const targets = [];
+    const types = ['A', 'D', 'W', 'OUT_TOP', 'OUT_LEFT', 'OUT_RIGHT'];
+    // Простой рандом для примера. Можно усложнить баланс.
+    for(let i=0; i<count; i++) {
+         targets.push(types[Math.floor(Math.random() * types.length)]);
+    }
+    return targets;
+}
+
+// ===================== MODE 3 & DUEL CORE =====================
+// ... (код Canvas и геометрии остается прежним) ...
 const M3={canvas:null,ctx:null,W:0,H:0};
-// === MODE 3 BACKGROUND IMAGE ===
-const stadiumImg = new Image();
-stadiumImg.src = 'stadium_bg.png';
-
-function initMode3Canvas(){
-  M3.canvas=$('mode3Canvas');
-  M3.ctx=M3.canvas.getContext('2d');
-  resizeMode3();
-  window.removeEventListener('resize',resizeMode3);
-  window.addEventListener('resize',resizeMode3);
-}
-
-function resizeMode3(){
-  const c=M3.canvas;
-  c.width=window.innerWidth;
-  c.height=window.innerHeight;
-  M3.W=c.width;M3.H=c.height;
-  drawMode3Scene();
-}
-
-function getGoalGeometry(){
-  const W=M3.W,H=M3.H;
-  const cx=W/2;
-
-  // Goal tilted ~160° the other way from previous:
-  // Crossbar is FAR = high on screen, narrow (near the pitch)
-  // Post bases are CLOSE = low on screen, wide (near us)
-  // Heavily tilted back — almost looking down on it
-
-  const horizonY=H*0.18;
-
-  // Crossbar — raised up for 50% taller goal
-  const crossbarY=H*0.28;
-  const crossbarHalf=W*0.450;
-
-  // Post bases — slightly NARROWER than crossbar (5° outward tilt = posts lean outward from goal center)
-  const postBaseY=H*0.84;
-  const goalHeight=postBaseY-crossbarY;
-  const postBaseHalf=crossbarHalf - Math.tan(5*Math.PI/180)*goalHeight;
-
-  // 3D DEPTH — back of the net lies on the ground behind goal
-  // The back corners should be DIRECTLY BEHIND the front posts (same X or slightly wider),
-  // but further DOWN the screen (behind us on the ground).
-  // This makes the side nets go straight back, not sideways.
-  const depthY=H*0.18;
-
-  // Back-top corners (behind crossbar ends — wider spread)
-  const backTL={x:cx-crossbarHalf-W*0.09, y:crossbarY+depthY};
-  const backTR={x:cx+crossbarHalf+W*0.09, y:crossbarY+depthY};
-  // Back-bottom corners (behind post bases — wider spread)  
-  const backBL={x:cx-postBaseHalf-W*0.10, y:postBaseY+depthY};
-  const backBR={x:cx+postBaseHalf+W*0.10, y:postBaseY+depthY};
-
-  // depthX kept for compatibility
-  const depthX=W*0.04;
-
-  return {cx,
-    // Front frame: tl/tr = crossbar ends (far, up, narrow), bl/br = post bases (close, down, wide)
-    tl:{x:cx-crossbarHalf, y:crossbarY},
-    tr:{x:cx+crossbarHalf, y:crossbarY},
-    bl:{x:cx-postBaseHalf, y:postBaseY},
-    br:{x:cx+postBaseHalf, y:postBaseY},
-    backTL, backTR, backBL, backBR,
-    crossbarY, postBaseY, crossbarHalf, postBaseHalf,
-    goalLineY: postBaseY,
-    horizonY, depthX, depthY
-  };
-}
-function showIdleBall(){
-  const g = getGoalGeometry();
-
-  idleBall = {
-    x: g.cx,
-    y: g.horizonY + 20,
-    size: 6
-  };
-
-  drawMode3Scene(idleBall); 
-}
-function drawMode3Scene(ballPos,impactDot){
-  const ctx=M3.ctx,W=M3.W,H=M3.H;
-  const g=getGoalGeometry();
- //=== BACKGROUND IMAGE (STADIUM: SKY + PITCH) ===
-if (stadiumImg.complete) {
-  const imgW = stadiumImg.width;
-  const imgH = stadiumImg.height;
-
-  const scale = Math.max(W / imgW, H / imgH);
-  const drawW = imgW * scale;
-  const drawH = imgH * scale;
-
-  const x = (W - drawW) / 2;
-  const y = (H - drawH) / 2;
-
-  ctx.drawImage(stadiumImg, x, y, drawW, drawH);
-} else {
-  ctx.fillStyle = '#0b0f1a';
-  ctx.fillRect(0, 0, W, H);
-}  
-
-/*
-  // === NET INSIDE GOAL OPENING ===
-  // Dark area behind the goal (the ground under the net)
-  ctx.fillStyle='rgba(5,5,12,0.35)';
-  ctx.beginPath();
-  ctx.moveTo(g.bl.x,g.bl.y);ctx.lineTo(g.br.x,g.br.y);
-  ctx.lineTo(g.backBR.x,g.backBR.y);ctx.lineTo(g.backBL.x,g.backBL.y);
-  ctx.closePath();ctx.fill();
-
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.tr.x,g.tr.y);
-  ctx.lineTo(g.br.x,g.br.y);ctx.lineTo(g.bl.x,g.bl.y);
-  ctx.closePath();ctx.clip();
-
-  // Dark net background
-  const netBg=ctx.createLinearGradient(0,g.crossbarY,0,g.postBaseY);
-  netBg.addColorStop(0,'#080810');netBg.addColorStop(1,'#050508');
-  ctx.fillStyle=netBg;
-  ctx.fillRect(0,g.crossbarY,W,g.postBaseY-g.crossbarY);
-
-  // Net mesh lines
-  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
-  const nv=20;
-  for(let i=0;i<=nv;i++){
-    const t=i/nv;
-    const tx=g.tl.x+(g.tr.x-g.tl.x)*t;
-    const bx=g.bl.x+(g.br.x-g.bl.x)*t;
-    ctx.beginPath();ctx.moveTo(tx,g.crossbarY);ctx.lineTo(bx,g.postBaseY);ctx.stroke();
-  }
-  const nh=8;
-  for(let i=0;i<=nh;i++){
-    const t=i/nh;
-    const lx=g.tl.x+(g.bl.x-g.tl.x)*t;
-    const rx=g.tr.x+(g.br.x-g.tr.x)*t;
-    const y=g.crossbarY+(g.postBaseY-g.crossbarY)*t;
-    ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
-  }
-  ctx.restore();
-*/
-
-  // === 3D GOAL STRUCTURE ===
-  const pw=Math.max(6,W*0.007);
-  ctx.lineCap='round';ctx.lineJoin='round';
-/*
-
-  // --- SIDE NETS (between front posts and back posts) ---
-  // Left side net
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.backTL.x,g.backTL.y);
-  ctx.lineTo(g.backBL.x,g.backBL.y);ctx.lineTo(g.bl.x,g.bl.y);
-  ctx.closePath();ctx.clip();
-  ctx.fillStyle='rgba(0,0,0,0.15)';
-  ctx.fill();
-  // Side net mesh
-  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
-  for(let i=0;i<=8;i++){
-    const t=i/8;
-    const fx=g.tl.x+(g.bl.x-g.tl.x)*t;
-    const fy=g.tl.y+(g.bl.y-g.tl.y)*t;
-    const bx=g.backTL.x+(g.backBL.x-g.backTL.x)*t;
-    const by=g.backTL.y+(g.backBL.y-g.backTL.y)*t;
-    ctx.beginPath();ctx.moveTo(fx,fy);ctx.lineTo(bx,by);ctx.stroke();
-  }
-  for(let i=0;i<=6;i++){
-    const t=i/6;
-    const lx=g.tl.x+(g.backTL.x-g.tl.x)*t;
-    const ly=g.tl.y+(g.backTL.y-g.tl.y)*t;
-    const lx2=g.bl.x+(g.backBL.x-g.bl.x)*t;
-    const ly2=g.bl.y+(g.backBL.y-g.bl.y)*t;
-    ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx2,ly2);ctx.stroke();
-  }
-  ctx.restore();
-*/
-/*
-
-  // Right side net
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(g.tr.x,g.tr.y);ctx.lineTo(g.backTR.x,g.backTR.y);
-  ctx.lineTo(g.backBR.x,g.backBR.y);ctx.lineTo(g.br.x,g.br.y);
-  ctx.closePath();ctx.clip();
-  ctx.fillStyle='rgba(0,0,0,0.15)';
-  ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
-  for(let i=0;i<=8;i++){
-    const t=i/8;
-    const fx=g.tr.x+(g.br.x-g.tr.x)*t;
-    const fy=g.tr.y+(g.br.y-g.tr.y)*t;
-    const bx=g.backTR.x+(g.backBR.x-g.backTR.x)*t;
-    const by=g.backTR.y+(g.backBR.y-g.backTR.y)*t;
-    ctx.beginPath();ctx.moveTo(fx,fy);ctx.lineTo(bx,by);ctx.stroke();
-  }
-  for(let i=0;i<=6;i++){
-    const t=i/6;
-    const rx=g.tr.x+(g.backTR.x-g.tr.x)*t;
-    const ry=g.tr.y+(g.backTR.y-g.tr.y)*t;
-    const rx2=g.br.x+(g.backBR.x-g.br.x)*t;
-    const ry2=g.br.y+(g.backBR.y-g.br.y)*t;
-    ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx2,ry2);ctx.stroke();
-  }
-  ctx.restore();
-*/
-/*
-
-  // --- TOP NET (between crossbar and back top bar) ---
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.tr.x,g.tr.y);
-  ctx.lineTo(g.backTR.x,g.backTR.y);ctx.lineTo(g.backTL.x,g.backTL.y);
-  ctx.closePath();ctx.clip();
-  ctx.fillStyle='rgba(0,0,0,0.1)';
-  ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
-  for(let i=0;i<=16;i++){
-    const t=i/16;
-    const fx=g.tl.x+(g.tr.x-g.tl.x)*t;
-    const bx=g.backTL.x+(g.backTR.x-g.backTL.x)*t;
-    ctx.beginPath();ctx.moveTo(fx,g.tl.y);ctx.lineTo(bx,g.backTL.y);ctx.stroke();
-  }
-  for(let i=0;i<=4;i++){
-    const t=i/4;
-    const lx=g.tl.x+(g.backTL.x-g.tl.x)*t;
-    const rx=g.tr.x+(g.backTR.x-g.tr.x)*t;
-    const y=g.tl.y+(g.backTL.y-g.tl.y)*t;
-    ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
-  }
-  ctx.restore();
-*/
-/*
-
-  // --- BACK DEPTH BARS (metal frame going backward) ---
-  // These are drawn as lighter/thinner bars — they're further away
-  const dpw=Math.max(4,pw*0.6);
-  ctx.strokeStyle='rgba(200,200,210,0.6)';ctx.lineWidth=dpw;
-  // Top-left depth bar (crossbar end → back)
-  ctx.beginPath();ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.backTL.x,g.backTL.y);ctx.stroke();
-  // Top-right depth bar
-  ctx.beginPath();ctx.moveTo(g.tr.x,g.tr.y);ctx.lineTo(g.backTR.x,g.backTR.y);ctx.stroke();
-  // Back top bar (connecting back corners)
-  ctx.strokeStyle='rgba(200,200,210,0.4)';ctx.lineWidth=dpw*0.8;
-  ctx.beginPath();ctx.moveTo(g.backTL.x,g.backTL.y);ctx.lineTo(g.backTR.x,g.backTR.y);ctx.stroke();
-  // Bottom-left depth bar (post → back)
-  ctx.strokeStyle='rgba(200,200,210,0.35)';ctx.lineWidth=dpw*0.7;
-  ctx.beginPath();ctx.moveTo(g.bl.x,g.bl.y);ctx.lineTo(g.backBL.x,g.backBL.y);ctx.stroke();
-  // Bottom-right depth bar
-  ctx.beginPath();ctx.moveTo(g.br.x,g.br.y);ctx.lineTo(g.backBR.x,g.backBR.y);ctx.stroke();
-*/
-/*
-  // --- FRONT FRAME (main posts + crossbar, drawn on top) ---
-  // Glow
-  ctx.save();
-  ctx.shadowColor='rgba(255,255,255,0.3)';ctx.shadowBlur=16;
-  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=pw+10;
-  ctx.beginPath();
-  ctx.moveTo(g.bl.x,g.bl.y);ctx.lineTo(g.tl.x,g.tl.y);
-  ctx.lineTo(g.tr.x,g.tr.y);ctx.lineTo(g.br.x,g.br.y);
-  ctx.stroke();
-  ctx.restore();
-*/
-/*
-  // Solid white front frame
-  ctx.strokeStyle='#e8e8e8';ctx.lineWidth=pw;
-  ctx.beginPath();ctx.moveTo(g.bl.x,g.bl.y);ctx.lineTo(g.tl.x,g.tl.y);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(g.br.x,g.br.y);ctx.lineTo(g.tr.x,g.tr.y);ctx.stroke();
-  ctx.lineWidth=pw+2;
-  ctx.beginPath();ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.tr.x,g.tr.y);ctx.stroke();
-*/
-  // === IMPACT DOT (bright cyan, very visible) ===
-  if(impactDot){
-    ctx.save();
-    ctx.shadowColor='rgba(0,229,255,1)';ctx.shadowBlur=50;
-    ctx.fillStyle='rgba(0,229,255,0.4)';
-    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,32,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-    ctx.shadowColor='rgba(0,229,255,0.9)';ctx.shadowBlur=30;
-    ctx.fillStyle='rgba(0,229,255,0.85)';
-    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,16,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-
-    ctx.fillStyle='#fff';
-    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,7,0,Math.PI*2);ctx.fill();
-
-    ctx.strokeStyle='rgba(0,229,255,0.7)';ctx.lineWidth=3;
-    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,26,0,Math.PI*2);ctx.stroke();
-
-    ctx.strokeStyle='rgba(0,229,255,0.3)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,38,0,Math.PI*2);ctx.stroke();
-
-    ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=2;
-    ctx.beginPath();
-    ctx.moveTo(impactDot.x-20,impactDot.y);ctx.lineTo(impactDot.x+20,impactDot.y);
-    ctx.moveTo(impactDot.x,impactDot.y-20);ctx.lineTo(impactDot.x,impactDot.y+20);
-    ctx.stroke();
-  }
-
-  // === BALL ===
-  if(ballPos){
-    const sz=ballPos.size||14;
-    ctx.fillStyle='rgba(0,0,0,0.15)';
-    ctx.beginPath();ctx.ellipse(ballPos.x,ballPos.y+sz*0.4,sz*0.7,sz*0.2,0,0,Math.PI*2);ctx.fill();
-    const bg=ctx.createRadialGradient(ballPos.x-sz*0.25,ballPos.y-sz*0.25,sz*0.1,ballPos.x,ballPos.y,sz);
-    bg.addColorStop(0,'#fff');bg.addColorStop(0.6,'#e8e8e8');bg.addColorStop(1,'#aaa');
-    ctx.fillStyle=bg;
-    ctx.beginPath();ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2);ctx.fill();
-    ctx.save();
-    ctx.shadowColor='rgba(255,255,255,0.4)';ctx.shadowBlur=18;
-    ctx.fillStyle='rgba(255,255,255,0.02)';
-    ctx.beginPath();ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-    ctx.strokeStyle='rgba(0,0,0,0.1)';ctx.lineWidth=0.8;
-    const ps=sz*0.32;
-    ctx.beginPath();
-    for(let i=0;i<5;i++){
-      const a=(i/5)*Math.PI*2-Math.PI/2;
-      const px=ballPos.x+Math.cos(a)*ps;
-      const py=ballPos.y+Math.sin(a)*ps;
-      if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
-    }
-    ctx.closePath();ctx.stroke();
-  }
-}
-
-// Ball targets — crossbar at top (far/narrow), post bases at bottom (close/wide)
-function getBallTargets(){
-  const g=getGoalGeometry();
-  const cx=g.cx;
-
-  // INSIDE GOAL (between crossbar top and post bases bottom):
-  const goalH=g.postBaseY-g.crossbarY;
-  const leftCorner={
-    x: g.bl.x + (g.br.x-g.bl.x)*0.08,
-    y: g.crossbarY + goalH*0.55
-  };
-  const rightCorner={
-    x: g.br.x - (g.br.x-g.bl.x)*0.08,
-    y: g.crossbarY + goalH*0.55
-  };
-  const center={
-    x: cx,
-    y: g.crossbarY + goalH*0.45
-  };
-
-  // OUTSIDE GOAL:
-  // Over crossbar (above goal on the pitch)
-  const overTop={
-    x: cx + (Math.random()-0.5)*70,
-    y: g.crossbarY - 25 - Math.random()*30
-  };
-  // Left of left post
-  const outLeft={
-    x: g.bl.x - 35 - Math.random()*50,
-    y: g.crossbarY + goalH*(0.2+Math.random()*0.4)
-  };
-  // Right of right post
-  const outRight={
-    x: g.br.x + 35 + Math.random()*50,
-    y: g.crossbarY + goalH*(0.2+Math.random()*0.4)
-  };
-
-  return {leftCorner,rightCorner,center,overTop,outLeft,outRight};
-}
-
-function getRandomMode3Target(){
-  const r=Math.random()*100;
-  const {out,side,center}=mode3Chances;
-
-  if(r<out){
-    return ['OUT_TOP','OUT_LEFT','OUT_RIGHT']
-      [Math.floor(Math.random()*3)];
-  }
-  if(r<out+side){
-    return Math.random()<0.5?'A':'D';
-  }
-  return 'W';
-}
-
+const stadiumImg = new Image(); stadiumImg.src = 'stadium_bg.png';
+function initMode3Canvas(){ M3.canvas=$('mode3Canvas'); M3.ctx=M3.canvas.getContext('2d'); resizeMode3(); window.removeEventListener('resize',resizeMode3); window.addEventListener('resize',resizeMode3); }
+function resizeMode3(){ const c=M3.canvas; c.width=window.innerWidth; c.height=window.innerHeight; M3.W=c.width;M3.H=c.height; drawMode3Scene(); }
+function getGoalGeometry(){ const W=M3.W,H=M3.H; const cx=W/2; const horizonY=H*0.18; const crossbarY=H*0.28; const crossbarHalf=W*0.450; const postBaseY=H*0.84; const goalHeight=postBaseY-crossbarY; const postBaseHalf=crossbarHalf - Math.tan(5*Math.PI/180)*goalHeight; const depthY=H*0.18; const backTL={x:cx-crossbarHalf-W*0.09, y:crossbarY+depthY}; const backTR={x:cx+crossbarHalf+W*0.09, y:crossbarY+depthY}; const backBL={x:cx-postBaseHalf-W*0.10, y:postBaseY+depthY}; const backBR={x:cx+postBaseHalf+W*0.10, y:postBaseY+depthY}; const depthX=W*0.04; return {cx, tl:{x:cx-crossbarHalf, y:crossbarY}, tr:{x:cx+crossbarHalf, y:crossbarY}, bl:{x:cx-postBaseHalf, y:postBaseY}, br:{x:cx+postBaseHalf, y:postBaseY}, backTL, backTR, backBL, backBR, crossbarY, postBaseY, crossbarHalf, postBaseHalf, goalLineY: postBaseY, horizonY, depthX, depthY }; }
+function showIdleBall(){ const g = getGoalGeometry(); idleBall = { x: g.cx, y: g.horizonY + 20, size: 6 }; drawMode3Scene(idleBall); }
+function drawMode3Scene(ballPos,impactDot){ const ctx=M3.ctx,W=M3.W,H=M3.H; const g=getGoalGeometry(); if (stadiumImg.complete) { const imgW = stadiumImg.width; const imgH = stadiumImg.height; const scale = Math.max(W / imgW, H / imgH); const drawW = imgW * scale; const drawH = imgH * scale; const x = (W - drawW) / 2; const y = (H - drawH) / 2; ctx.drawImage(stadiumImg, x, y, drawW, drawH); } else { ctx.fillStyle = '#0b0f1a'; ctx.fillRect(0, 0, W, H); } const pw=Math.max(6,W*0.007); ctx.lineCap='round';ctx.lineJoin='round'; if(impactDot){ ctx.save(); ctx.shadowColor='rgba(0,229,255,1)';ctx.shadowBlur=50; ctx.fillStyle='rgba(0,229,255,0.4)'; ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,32,0,Math.PI*2);ctx.fill(); ctx.restore(); ctx.save(); ctx.shadowColor='rgba(0,229,255,0.9)';ctx.shadowBlur=30; ctx.fillStyle='rgba(0,229,255,0.85)'; ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,16,0,Math.PI*2);ctx.fill(); ctx.restore(); ctx.fillStyle='#fff'; ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,7,0,Math.PI*2);ctx.fill(); ctx.strokeStyle='rgba(0,229,255,0.7)';ctx.lineWidth=3; ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,26,0,Math.PI*2);ctx.stroke(); ctx.strokeStyle='rgba(0,229,255,0.3)';ctx.lineWidth=2; ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,38,0,Math.PI*2);ctx.stroke(); ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(impactDot.x-20,impactDot.y);ctx.lineTo(impactDot.x+20,impactDot.y); ctx.moveTo(impactDot.x,impactDot.y-20);ctx.lineTo(impactDot.x,impactDot.y+20); ctx.stroke(); } if(ballPos){ const sz=ballPos.size||14; ctx.fillStyle='rgba(0,0,0,0.15)'; ctx.beginPath();ctx.ellipse(ballPos.x,ballPos.y+sz*0.4,sz*0.7,sz*0.2,0,0,Math.PI*2);ctx.fill(); const bg=ctx.createRadialGradient(ballPos.x-sz*0.25,ballPos.y-sz*0.25,sz*0.1,ballPos.x,ballPos.y,sz); bg.addColorStop(0,'#fff');bg.addColorStop(0.6,'#e8e8e8');bg.addColorStop(1,'#aaa'); ctx.fillStyle=bg; ctx.beginPath();ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2);ctx.fill(); ctx.save(); ctx.shadowColor='rgba(255,255,255,0.4)';ctx.shadowBlur=18; ctx.fillStyle='rgba(255,255,255,0.02)'; ctx.beginPath();ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2);ctx.fill(); ctx.restore(); ctx.strokeStyle='rgba(0,0,0,0.1)';ctx.lineWidth=0.8; const ps=sz*0.32; ctx.beginPath(); for(let i=0;i<5;i++){ const a=(i/5)*Math.PI*2-Math.PI/2; const px=ballPos.x+Math.cos(a)*ps; const py=ballPos.y+Math.sin(a)*ps; if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py); } ctx.closePath();ctx.stroke(); } }
+function getBallTargets(){ const g=getGoalGeometry(); const cx=g.cx; const goalH=g.postBaseY-g.crossbarY; const leftCorner={ x: g.bl.x + (g.br.x-g.bl.x)*0.08, y: g.crossbarY + goalH*0.55 }; const rightCorner={ x: g.br.x - (g.br.x-g.bl.x)*0.08, y: g.crossbarY + goalH*0.55 }; const center={ x: cx, y: g.crossbarY + goalH*0.45 }; const overTop={ x: cx + (Math.random()-0.5)*70, y: g.crossbarY - 25 - Math.random()*30 }; const outLeft={ x: g.bl.x - 35 - Math.random()*50, y: g.crossbarY + goalH*(0.2+Math.random()*0.4) }; const outRight={ x: g.br.x + 35 + Math.random()*50, y: g.crossbarY + goalH*(0.2+Math.random()*0.4) }; return {leftCorner,rightCorner,center,overTop,outLeft,outRight}; }
+function getRandomMode3Target(){ const r=Math.random()*100; const {out,side,center}=mode3Chances; if(r<out){ return ['OUT_TOP','OUT_LEFT','OUT_RIGHT'] [Math.floor(Math.random()*3)]; } if(r<out+side){ return Math.random()<0.5?'A':'D'; } return 'W'; }
 let m3AnimFrame=null;
-
-function animateBallMode3(targetType,onDone){
-  const targets=getBallTargets();
-  const g=getGoalGeometry();
-  let endPos;
-  // Determine if this ball goes INTO the goal
-  let thisNeedsSpace=true;
-
-  switch(targetType){
-    case 'A':endPos=targets.leftCorner;break;
-    case 'D':endPos=targets.rightCorner;break;
-    case 'W':endPos=targets.center;break;
-    case 'OUT_TOP':endPos=targets.overTop;thisNeedsSpace=false;break;
-    case 'OUT_LEFT':endPos=targets.outLeft;thisNeedsSpace=false;break;
-    case 'OUT_RIGHT':endPos=targets.outRight;thisNeedsSpace=false;break;
-  }
-
-  // Set the per-round flag IMMEDIATELY so keydown handler can read it
-  roundNeedsSpace=thisNeedsSpace;
-
-  // Ball starts from far on the pitch (near the horizon), small, and flies
-  // DOWN toward the goal. This matches the behind-goalkeeper perspective.
-  const startX=g.cx;
-  const startY=g.horizonY + 20; // just below horizon — far on the pitch
-  const startSize=4;
-  const endSize=22;
-  const duration=700;
-  const startT=performance.now();
-
-  // For misses, calculate impact dot position right away so it shows from frame 1
-  const showImpact = !thisNeedsSpace;
-  const impactPos = showImpact ? {x:endPos.x, y:endPos.y} : null;
-
-  function frame(now){
-    let t=(now-startT)/duration;
-    if(t>1)t=1;
-    const ease=1-Math.pow(1-t,3);
-    const x=startX+(endPos.x-startX)*ease;
-    const y=startY+(endPos.y-startY)*ease;
-    const size=startSize+(endSize-startSize)*ease;
-
-    // Always show impact dot for misses, even while ball is still flying
-    drawMode3Scene({x,y,size}, impactPos);
-
-    if(t<1){
-      m3AnimFrame=requestAnimationFrame(frame);
-    }else{
-      if(onDone)onDone();
-    }
-  }
-
-  m3AnimFrame=requestAnimationFrame(frame);
-}
-
-function clearMode3Ball(){
-  if(m3AnimFrame)cancelAnimationFrame(m3AnimFrame);
-  drawMode3Scene();
-}
+function animateBallMode3(targetType,onDone){ const targets=getBallTargets(); const g=getGoalGeometry(); let endPos; let thisNeedsSpace=true; switch(targetType){ case 'A':endPos=targets.leftCorner;break; case 'D':endPos=targets.rightCorner;break; case 'W':endPos=targets.center;break; case 'OUT_TOP':endPos=targets.overTop;thisNeedsSpace=false;break; case 'OUT_LEFT':endPos=targets.outLeft;thisNeedsSpace=false;break; case 'OUT_RIGHT':endPos=targets.outRight;thisNeedsSpace=false;break; } roundNeedsSpace=thisNeedsSpace; const startX=g.cx; const startY=g.horizonY + 20; const startSize=4; const endSize=22; const duration=700; const startT=performance.now(); const showImpact = !thisNeedsSpace; const impactPos = showImpact ? {x:endPos.x, y:endPos.y} : null; function frame(now){ let t=(now-startT)/duration; if(t>1)t=1; const ease=1-Math.pow(1-t,3); const x=startX+(endPos.x-startX)*ease; const y=startY+(endPos.y-startY)*ease; const size=startSize+(endSize-startSize)*ease; drawMode3Scene({x,y,size}, impactPos); if(t<1){ m3AnimFrame=requestAnimationFrame(frame); }else{ if(onDone)onDone(); } } m3AnimFrame=requestAnimationFrame(frame); }
+function clearMode3Ball(){ if(m3AnimFrame)cancelAnimationFrame(m3AnimFrame); drawMode3Scene(); }
 
 // ===================== GAME LOGIC =====================
-
 let m3SpacePressed=false;
 let m3TimeoutId=null;
 let idleBall = null;
 
 function startRound(){
-  if(attempts>=maxAttempts){showResults();return}
-$('left').classList.remove('active');
-$('right').classList.remove('active');
-$('ball').style.display = 'none';
-$('info').textContent = '';
-firstDir = null;
-firstDirTime = null;
-spaceTime = null;
-allKeySegments = [];
-allSpacePresses = [];
+    // Если это дуэль, используется другая функция старта
+    if(mode === 4) { startDuelRoundProcess(); return; }
 
-  // ===== MODE 3 =====
-  if(mode===3){
-    clearMode3Ball();
-    showIdleBall();
+    if(attempts>=maxAttempts){showResults();return}
+    $('left').classList.remove('active'); $('right').classList.remove('active'); $('ball').style.display = 'none'; $('info').textContent = '';
+    firstDir = null; firstDirTime = null; spaceTime = null; allKeySegments = []; allSpacePresses = [];
 
-    roundStartTime = performance.now();
-    recording = true;
-    waiting = false;
-    m3SpacePressed = false;
-    roundNeedsSpace = false;
+    // ===== MODE 3 SOLO =====
+    if(mode===3){
+        clearMode3Ball(); showIdleBall();
+        roundStartTime = performance.now(); recording = true; waiting = false; m3SpacePressed = false; roundNeedsSpace = false;
+        const delay = Math.random()*1500 + 600;
+        setTimeout(()=>{
+            target = getRandomMode3Target();
+            signalTime = performance.now(); waiting = true;
+            animateBallMode3(target, ()=>{
+                if(!roundNeedsSpace){
+                    m3TimeoutId = setTimeout(()=>{
+                        if(waiting){ waiting = false; recording = false; finalizeKeys(performance.now()); evaluateMode3(); }
+                    },1200);
+                }
+            });
+        }, delay);
+        return;
+    }
+
+    // ===== MODE 1 / 2 =====
+    roundStartTime = performance.now(); recording = true; waiting = false; firstDir = null; firstDirTime = null; spaceTime = null; allKeySegments = []; allSpacePresses = [];
+    const ball = $('ball'); const delay = Math.random()*1500 + 500;
+    setTimeout(()=>{
+        target = Math.random()<.5 ? 'A' : 'D';
+        signalTime = performance.now(); waiting = true;
+        if(mode===1){ $(target==='A'?'left':'right').classList.add('active'); }
+        if(mode===2){ ball.style.display='block'; ball.style.left='50%'; ball.style.top='0%'; ball.style.transition='none'; ball.style.transform='translate(-50%,0%)'; requestAnimationFrame(()=>requestAnimationFrame(()=>{ ball.style.transition='all 0.35s linear'; ball.style.left=target==='A'?'20%':'80%'; ball.style.top='80%'; })); }
+    }, delay);
+}
+
+
+// --- НОВАЯ ФУНКЦИЯ СТАРТА РАУНДА ДЛЯ ДУЭЛИ ---
+function startDuelRoundProcess() {
+    if(attempts >= maxAttempts){ showResults(); return; }
+
+    // Сброс состояний раунда
+    Duel.currentRoundData = null;
+    Duel.opponentRoundData = null;
+    $('info').textContent = `Раунд ${attempts+1} / ${maxAttempts}`;
+    $('info').style.color = "#888";
+
+    clearMode3Ball(); showIdleBall();
+    roundStartTime = performance.now(); recording = true; waiting = false; m3SpacePressed = false; roundNeedsSpace = false;
 
     const delay = Math.random()*1500 + 600;
-
     setTimeout(()=>{
-      target = getRandomMode3Target();
-      signalTime = performance.now();
-      waiting = true;
-
-      animateBallMode3(target, ()=>{
-        if(!roundNeedsSpace){
-          m3TimeoutId = setTimeout(()=>{
-            if(waiting){
-              waiting = false;
-              recording = false;
-              finalizeKeys(performance.now());
-              evaluateMode3();
+        // Берем цель из заранее сгенерированного списка
+        target = Duel.targets[attempts];
+        signalTime = performance.now(); waiting = true;
+        animateBallMode3(target, ()=>{
+            if(!roundNeedsSpace){
+                m3TimeoutId = setTimeout(()=>{
+                    if(waiting){ waiting = false; recording = false; finalizeKeys(performance.now()); evaluateMode3(); }
+                },1200);
             }
-          },1200);
-        }
-      });
+        });
     }, delay);
-
-    return;
-  }
-
-  // ===== MODE 1 / 2 =====
-// reset per round (mode 1 / 2)
-roundStartTime = performance.now();
-recording = true;
-waiting = false;
-
-firstDir = null;
-firstDirTime = null;
-spaceTime = null;
-allKeySegments = [];
-allSpacePresses = [];
-  const ball = $('ball');
-  const delay = Math.random()*1500 + 500;
-
-  setTimeout(()=>{
-    target = Math.random()<.5 ? 'A' : 'D';
-    signalTime = performance.now();
-    waiting = true;
-
-    if(mode===1){
-      $(target==='A'?'left':'right').classList.add('active');
-    }
-
-    if(mode===2){
-      ball.style.display='block';
-      ball.style.left='50%';
-      ball.style.top='0%';
-      ball.style.transition='none';
-      ball.style.transform='translate(-50%,0%)';
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        ball.style.transition='all 0.35s linear';
-        ball.style.left=target==='A'?'20%':'80%';
-        ball.style.top='80%';
-      }));
-    }
-  }, delay);
 }
+
 
 document.addEventListener('keydown',e=>{
-  if(!recording)return;
-  if(e.repeat)return;
-  const now=performance.now();
-  const code=e.code;
-
-  if((code==='KeyA'||code==='KeyD'||(code==='KeyW'&&mode===3))&&!allKeyDowns[code]){
-    allKeyDowns[code]=now;
-    if(!firstDir&&waiting){
-      if(code==='KeyA')firstDir='A';
-      else if(code==='KeyD')firstDir='D';
-      else if(code==='KeyW')firstDir='W';
-      firstDirTime=now;
+    if(!recording)return; if(e.repeat)return; const now=performance.now(); const code=e.code;
+    if((code==='KeyA'||code==='KeyD'||(code==='KeyW'&&(mode===3||mode===4)))&&!allKeyDowns[code]){
+        allKeyDowns[code]=now;
+        if(!firstDir&&waiting){ if(code==='KeyA')firstDir='A'; else if(code==='KeyD')firstDir='D'; else if(code==='KeyW')firstDir='W'; firstDirTime=now; }
     }
-  }
-
-  if(code==='Space'){
-    allSpacePresses.push(now);
-
-    if(mode===3&&waiting){
-      spaceTime=now;m3SpacePressed=true;
-      if(!firstDir){
-        if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA'];}
-        else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD'];}
-        else if(allKeyDowns['KeyW']){firstDir='W';firstDirTime=allKeyDowns['KeyW'];}
-      }
-      waiting=false;recording=false;
-      if(m3TimeoutId){clearTimeout(m3TimeoutId);m3TimeoutId=null;}
-      finalizeKeys(now);
-      evaluateMode3();
-      return;
+    if(code==='Space'){
+        allSpacePresses.push(now);
+        if((mode===3||mode===4)&&waiting){
+            spaceTime=now;m3SpacePressed=true;
+            if(!firstDir){ if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA'];} else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD'];} else if(allKeyDowns['KeyW']){firstDir='W';firstDirTime=allKeyDowns['KeyW'];} }
+            waiting=false;recording=false;
+            if(m3TimeoutId){clearTimeout(m3TimeoutId);m3TimeoutId=null;}
+            finalizeKeys(now);
+            evaluateMode3();
+            return;
+        }
+        if(waiting&&!spaceTime&&mode!==3&&mode!==4){
+            spaceTime=now;
+            if(!firstDir){ if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA'];} else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD'];} }
+            waiting=false;recording=false; finalizeKeys(now); evaluate();
+        }
     }
-
-    if(waiting&&!spaceTime&&mode!==3){
-      spaceTime=now;
-      if(!firstDir){
-        if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA'];}
-        else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD'];}
-      }
-      waiting=false;recording=false;
-      finalizeKeys(now);
-      evaluate();
-    }
-  }
 });
+document.addEventListener('keyup',e=>{ const now=performance.now(); const code=e.code; if(allKeyDowns[code]){ allKeySegments.push({code,down:allKeyDowns[code],up:now}); delete allKeyDowns[code]; } });
+function finalizeKeys(endTime){ for(const code of Object.keys(allKeyDowns)){ allKeySegments.push({code,down:allKeyDowns[code],up:endTime}); } allKeyDowns={}; }
 
-document.addEventListener('keyup',e=>{
-  const now=performance.now();
-  const code=e.code;
-  if(allKeyDowns[code]){
-    allKeySegments.push({code,down:allKeyDowns[code],up:now});
-    delete allKeyDowns[code];
-  }
-});
-
-function finalizeKeys(endTime){
-  for(const code of Object.keys(allKeyDowns)){
-    allKeySegments.push({code,down:allKeyDowns[code],up:endTime});
-  }
-  allKeyDowns={};
-}
-
+// --- ИЗМЕНЕННАЯ ФУНКЦИЯ ОЦЕНКИ ДЛЯ РЕЖИМА 3 И 4 ---
 function evaluateMode3(){
-  let result,ok=false;
-  const reaction=spaceTime?Math.round(spaceTime-signalTime):null;
+    let resultMsg, ok=false;
+    const reaction=spaceTime?Math.round(spaceTime-signalTime):null;
 
-  // Use roundNeedsSpace — set at animation start, reliable
-  if(!roundNeedsSpace){
-    // Ball went OUTSIDE the goal
-    if(m3SpacePressed){
-      result='Мяч мимо — не прыгай!';
+    if(!roundNeedsSpace){
+        if(m3SpacePressed){ resultMsg='Мяч мимо — не прыгай!'; } else { ok=true; resultMsg='Мяч мимо — верно!'; }
     }else{
-      ok=true;
-      result='Мяч мимо — верно!';
+        if(!m3SpacePressed){ resultMsg='Не прыгнул!'; }
+        else if(!firstDir){ resultMsg='SPACE без направления'; }
+        else if(spaceTime+tolerance<firstDirTime){ resultMsg='SPACE раньше направления'; }
+        else if(firstDir!==target){ resultMsg='Неверная сторона'; }
+        else { ok=true; resultMsg=`${reaction} мс`; }
     }
-  }else{
-    // Ball went INSIDE the goal — need correct direction + space
-    if(!m3SpacePressed){
-      result='Не прыгнул!';
-    }else if(!firstDir){
-      result='SPACE без направления';
-    }else if(spaceTime+tolerance<firstDirTime){
-      result='SPACE раньше направления';
-    }else if(firstDir!==target){
-      result='Неверная сторона';
-    }else{
-      ok=true;
-      if(reaction!==null)reactions.push(reaction);
-      result=`${reaction} мс`;
+
+    let targetLabel;
+    switch(target){ case 'A':targetLabel='← Левый угол';break; case 'D':targetLabel='→ Правый угол';break; case 'W':targetLabel='↑ Центр ворот';break; case 'OUT_TOP':targetLabel='⬆ Над воротами';break; case 'OUT_LEFT':targetLabel='⬅ Слева от ворот';break; case 'OUT_RIGHT':targetLabel='➡ Справа от ворот';break; }
+
+    const roundStats = {
+        attempt:attempts+1, target, firstDir, ok, result:resultMsg,
+        reactionMs:ok&&reaction?reaction:null,
+        signalRel:signalTime-roundStartTime,
+        spaceRel:spaceTime?spaceTime-roundStartTime:null,
+        allSpaceRel:allSpacePresses.map(t=>t-roundStartTime),
+        segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})),
+        targetLabel
+    };
+    roundData.push(roundStats);
+
+    // --- СПЕЦИФИКА ДУЭЛИ ---
+    if(mode === 4) {
+        // Сохраняем свой результат
+        Duel.currentRoundData = { ok: ok, reaction: (ok && reaction) ? reaction : 99999 }; // 99999 если ошибка, для простоты сравнения
+        $('info').textContent = "Ожидание соперника...";
+        // Отправляем результат сопернику
+        Duel.conn.send({ type: 'ROUND_RESULT', result: Duel.currentRoundData });
+        // Проверяем, готовы ли оба
+        checkDuelRoundComplete();
+    } else {
+        // Соло режим - как обычно
+        if(ok&&reaction!==null) reactions.push(reaction);
+        const dot=$('dot'+attempts); if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
+        $('info').textContent=(ok?'✅ ':'❌ ')+resultMsg;
+        attempts++;
+        setTimeout(startRound,900);
     }
-  }
-
-  const dot=$('dot'+attempts);
-  if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
-
-  let targetLabel;
-  switch(target){
-    case 'A':targetLabel='← Левый угол';break;
-    case 'D':targetLabel='→ Правый угол';break;
-    case 'W':targetLabel='↑ Центр ворот';break;
-    case 'OUT_TOP':targetLabel='⬆ Над воротами';break;
-    case 'OUT_LEFT':targetLabel='⬅ Слева от ворот';break;
-    case 'OUT_RIGHT':targetLabel='➡ Справа от ворот';break;
-  }
-
-  roundData.push({
-    attempt:attempts+1,target,firstDir,ok,result,
-    reactionMs:ok&&reaction?reaction:null,
-    signalRel:signalTime-roundStartTime,
-    spaceRel:spaceTime?spaceTime-roundStartTime:null,
-    allSpaceRel:allSpacePresses.map(t=>t-roundStartTime),
-    segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})),
-    targetLabel
-  });
-
-  attempts++;
-  $('info').textContent=(ok?'✅ ':'❌ ')+result;
-  setTimeout(startRound,900);
 }
+
+// --- ЛОГИКА ПОДСЧЕТА ОЧКОВ ДУЭЛИ ---
+function checkDuelRoundComplete() {
+    // Ждем, пока будут результаты обоих игроков
+    if(Duel.currentRoundData && Duel.opponentRoundData) {
+        const my = Duel.currentRoundData;
+        const opp = Duel.opponentRoundData;
+        let roundWinner = null; // 'me', 'opp', or null (draw)
+
+        // Правила начисления очков:
+        // 1. Если оба ошиблись или оба правы с одинаковым временем (вряд ли, но все же) -> Ничья, 0 очков.
+        // 2. Если один прав, другой ошибся -> Очко правому.
+        // 3. Если оба правы -> Очко тому, кто быстрее.
+
+        if (my.ok && !opp.ok) {
+            Duel.myScore++; roundWinner = 'me';
+        } else if (!my.ok && opp.ok) {
+            Duel.oppScore++; roundWinner = 'opp';
+        } else if (my.ok && opp.ok) {
+            if(my.reaction < opp.reaction) {
+                Duel.myScore++; roundWinner = 'me';
+            } else if (opp.reaction < my.reaction) {
+                Duel.oppScore++; roundWinner = 'opp';
+            }
+            // else draw
+        }
+        // else both fail -> draw
+
+        // Обновление HUD и точки
+        updateDuelScoreUI();
+        const dot=$('dot'+attempts);
+        if(dot){
+            dot.classList.remove('current');
+            if(roundWinner === 'me') dot.classList.add('success');
+            else if(roundWinner === 'opp') dot.classList.add('fail');
+            else dot.classList.add('draw'); // Желтая точка для ничьей
+        }
+
+        // Показать инфо о раунде
+        let infoText = "";
+        if(my.ok) infoText += `Вы: ${my.reaction}мс. `; else infoText += `Вы: Ошибка. `;
+        if(opp.ok) infoText += `Соп: ${opp.reaction}мс.`; else infoText += `Соп: Ошибка.`;
+        $('info').textContent = infoText;
+        $('info').style.color = roundWinner === 'me' ? 'var(--success)' : (roundWinner === 'opp' ? 'var(--fail)' : 'var(--warn)');
+
+        // Сохраняем реакцию соперника для статистики
+        if(opp.ok) Duel.opponentReactions.push(opp.reaction);
+
+        attempts++;
+        // Запуск следующего раунда через паузу
+        setTimeout(startDuelRoundProcess, 2000);
+    }
+}
+
+function updateDuelScoreUI() {
+    $('duelScore').innerHTML = `<span style="color:var(--accent)">YOU</span> ${Duel.myScore} : ${Duel.oppScore} <span style="color:var(--fail)">OPP</span>`;
+}
+
 
 function evaluate(){
-  let result,ok=false;
-  if(!firstDir){
-    result='SPACE без направления';
-  }else if(spaceTime+tolerance<firstDirTime){
-    result='SPACE раньше направления';
-  }else if(firstDir!==target){
-    result='Неверная сторона';
-  }else{
-    const reaction=Math.round(spaceTime-signalTime);
-    reactions.push(reaction);
-    result=`${reaction} мс`;ok=true;
-  }
-
-  const dot=$('dot'+attempts);
-  if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
-
-  roundData.push({
-    attempt:attempts+1,target,firstDir,ok,result,
-    reactionMs:ok?Math.round(spaceTime-signalTime):null,
-    signalRel:signalTime-roundStartTime,
-    spaceRel:spaceTime?spaceTime-roundStartTime:null,
-    allSpaceRel:allSpacePresses.map(t=>t-roundStartTime),
-    segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime}))
-  });
-
-  attempts++;
-  $('info').textContent=(ok?'✅ ':'❌ ')+result;
-  setTimeout(startRound,700);
+    let result,ok=false;
+    if(!firstDir){ result='SPACE без направления'; }else if(spaceTime+tolerance<firstDirTime){ result='SPACE раньше направления'; }else if(firstDir!==target){ result='Неверная сторона'; }else{ const reaction=Math.round(spaceTime-signalTime); reactions.push(reaction); result=`${reaction} мс`;ok=true; }
+    const dot=$('dot'+attempts); if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
+    roundData.push({ attempt:attempts+1,target,firstDir,ok,result, reactionMs:ok?Math.round(spaceTime-signalTime):null, signalRel:signalTime-roundStartTime, spaceRel:spaceTime?spaceTime-roundStartTime:null, allSpaceRel:allSpacePresses.map(t=>t-roundStartTime), segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})) });
+    attempts++; $('info').textContent=(ok?'✅ ':'❌ ')+result; setTimeout(startRound,700);
 }
 
 function showResults(){
-  $('info').textContent='';
-  if(mode===3)$('mode3Area').style.display='none';
-  $('resultsOverlay').classList.add('show');
-  let avg='—';
-  if(reactions.length)avg=Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length)+' мс';
+    $('info').textContent='';
+    if(mode===3 || mode===4)$('mode3Area').style.display='none';
+    $('resultsOverlay').classList.add('show');
 
-  let html=`<div class="res-title">Результаты</div><div class="res-avg">Средняя реакция: ${avg}</div>`;
-  for(const rd of roundData)html+=buildRoundCard(rd);
-  html+=`<div class="btn-row">
-    <button class="restart-btn" onclick="restartSameMode()">Играть снова</button>
-    <button class="back-btn" onclick="backToMenu()">В меню</button>
-  </div>`;
-  $('resultsContent').innerHTML=html;
-}
+    let html = "";
+    if(mode === 4) {
+        // --- РЕЗУЛЬТАТЫ ДУЭЛИ ---
+        let resultTitle = "Ничья!";
+        if(Duel.myScore > Duel.oppScore) resultTitle = "Вы победили! 🏆";
+        if(Duel.oppScore > Duel.myScore) resultTitle = "Соперник победил";
 
-function buildRoundCard(rd){
-  const sig=rd.signalRel;
-  let maxT=sig+200,minT=0;
-  for(const s of rd.segments){maxT=Math.max(maxT,s.up);minT=Math.min(minT,s.down);}
-  if(rd.spaceRel)maxT=Math.max(maxT,rd.spaceRel);
-  for(const t of rd.allSpaceRel)maxT=Math.max(maxT,t);
+        html += `<div class="res-title">${resultTitle}</div>`;
+        html += `<div class="res-avg" style="font-size:28px">Счет: <span style="color:var(--accent)">${Duel.myScore}</span> - <span style="color:var(--fail)">${Duel.oppScore}</span></div>`;
 
-  const pad=Math.max((maxT-minT)*0.08,30);
-  minT-=pad;maxT+=pad;
-  const range=maxT-minT;
-  const toP=t=>((t-minT)/range*100);
+        // Средняя реакция (только успешные)
+        const myAvg = reactions.length ? Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length) : '—';
+        const oppAvg = Duel.opponentReactions.length ? Math.round(Duel.opponentReactions.reduce((a,b)=>a+b,0)/Duel.opponentReactions.length) : '—';
+        html += `<div class="res-avg" style="margin-bottom:20px">Ср. реакция (Вы): ${myAvg} мс <br> Ср. реакция (Соп): ${oppAvg} мс</div>`;
 
-  let inner='';
-  const sigP=toP(sig);
-  inner+=`<div class="tl-prezone" style="left:0;width:${sigP}%"></div>`;
-  inner+=`<div class="tl-signal-line" style="left:${sigP}%"></div>`;
-  inner+=`<div class="tl-marker signal-mk" style="left:${sigP}%"></div>`;
+        html += `<div class="btn-row"> <button class="back-btn" onclick="backToMenu()">Выход в меню</button> </div>`;
 
-  for(const s of rd.segments){
-    if(s.code==='KeyA'||s.code==='KeyD'||s.code==='KeyW'){
-      const l=toP(s.down),r=toP(s.up);
-      const isA=s.code==='KeyA';
-      const isW=s.code==='KeyW';
-      const cls=isA?'key-a':isW?'key-w':'key-d';
-      const yOff=isA?-14:isW?-2:10;
-      const w=Math.max(r-l,0.4);
-      inner+=`<div class="tl-bar ${cls}" style="left:${l}%;width:${w}%;top:calc(50% + ${yOff}px)"></div>`;
+    } else {
+        // --- ОБЫЧНЫЕ РЕЗУЛЬТАТЫ ---
+        let avg='—'; if(reactions.length)avg=Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length)+' мс';
+        html=`<div class="res-title">Результаты</div><div class="res-avg">Средняя реакция: ${avg}</div>`;
+        for(const rd of roundData)html+=buildRoundCard(rd);
+        html+=`<div class="btn-row"> <button class="restart-btn" onclick="restartSameMode()">Играть снова</button> <button class="back-btn" onclick="backToMenu()">В меню</button> </div>`;
     }
-  }
-  for(const t of rd.allSpaceRel){
-    inner+=`<div class="tl-marker space-mk" style="left:${toP(t)}%"></div>`;
-  }
-
-  const nTicks=6;let ticks='';
-  for(let i=0;i<=nTicks;i++){
-    const t=minT+(range*i/nTicks);
-    const rel=Math.round(t-sig);
-    const label=(rel>=0?'+':'')+rel;
-    ticks+=`<div class="tl-label" style="left:${toP(t)}%">${label}</div>`;
-  }
-  ticks+=`<div class="tl-label top" style="left:${sigP}%;color:#fff;font-weight:bold">▼ сигнал</div>`;
-  if(rd.spaceRel!=null){
-    ticks+=`<div class="tl-label top" style="left:${toP(rd.spaceRel)}%;color:var(--warn)">SPACE</div>`;
-  }
-
-  const resClass=rd.ok?'ok':'err';
-  const resText=rd.ok?`✅ ${rd.reactionMs?rd.reactionMs+' мс':'Верно'}`:`❌ ${rd.result}`;
-  let targetLabel=rd.targetLabel||(rd.target==='A'?'← LEFT (A)':'→ RIGHT (D)');
-  const showW=mode===3;
-
-  return `<div class="round-card">
-    <div class="round-header">
-      <span class="round-num">Раунд ${rd.attempt} · Цель: ${targetLabel}</span>
-      <span class="round-result ${resClass}">${resText}</span>
-    </div>
-    <div class="timeline-wrap">
-      <div class="tl-axis"></div>
-      ${ticks}${inner}
-    </div>
-    <div class="tl-legend">
-      <div class="tl-legend-item"><div class="sw" style="background:var(--accent)"></div>A (лево)</div>
-      <div class="tl-legend-item"><div class="sw" style="background:var(--purple)"></div>D (право)</div>
-      ${showW?'<div class="tl-legend-item"><div class="sw" style="background:var(--success)"></div>W (центр)</div>':''}
-      <div class="tl-legend-item"><div class="sw circle" style="background:var(--warn)"></div>SPACE</div>
-      <div class="tl-legend-item"><div class="sw circle" style="background:#fff"></div>Сигнал</div>
-      <div class="tl-legend-item"><div class="sw" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15)"></div>До сигнала</div>
-    </div>
-  </div>`;
+    $('resultsContent').innerHTML=html;
 }
 
-window.restartSameMode=function(){
-  maxAttempts = (mode===3) ? 15 : 5;
-  resetGame();
-  if(mode===3){
-    $('mode3Area').style.display='block';
+// Функции навигации
+function backToMenu(){
+    // Если была дуэль, разрываем соединение
+    if(Duel.active) {
+        if(Duel.conn) Duel.conn.close();
+        if(Duel.peer) Duel.peer.destroy();
+        Duel.peer = null; Duel.conn = null; Duel.active = false;
+    }
+    $('resultsOverlay').classList.remove('show');
+    $('menu').style.display='flex';
     $('gameArea').style.display='none';
-    initMode3Canvas();
-  }
-  startRound();
-}
-window.backToMenu=function(){
-  resetGame();
-  $('mode3Area').style.display='none';
-  $('gameArea').style.display='flex';
-  $('menu').style.display='flex';
-}
-// ===== MODE 3 SETTINGS LOGIC =====
-const outR = $('outRange'),
-      sideR = $('sideRange'),
-      centerR = $('centerRange');
-
-function updatePercents(){
-  let o = +outR.value,
-      s = +sideR.value,
-      c = +centerR.value;
-
-  const sum = o + s + c || 1;
-
-  o = Math.round(o / sum * 100);
-  s = Math.round(s / sum * 100);
-  c = 100 - o - s;
-
-  $('pOut').textContent = o;
-  $('pSide').textContent = s;
-  $('pCenter').textContent = c;
-
-  mode3Chances = {
-    out: o,
-    side: s,
-    center: c
-  };
+    $('mode3Area').style.display='none';
+    $('duelScore').style.display='none'; // Скрыть счет
+    // Сброс URL
+    window.history.replaceState({}, document.title, window.location.pathname);
 }
 
-[outR, sideR, centerR].forEach(r => {
-  r.addEventListener('input', updatePercents);
-});
+function restartSameMode(){
+    $('resultsOverlay').classList.remove('show');
+    // Для соло режимов просто перезапускаем
+    if(mode !== 4) {
+       startGame(mode);
+    }
+}
 
-updatePercents();
+// --- Вспомогательная функция построения карточки (без изменений) ---
+function buildRoundCard(rd){ const sig=rd.signalRel; let maxT=sig+200,minT=0; for(const s of rd.segments){maxT=Math.max(maxT,s.up);minT=Math.min(minT,s.down);} if(rd.spaceRel)maxT=Math.max(maxT,rd.spaceRel); for(const t of rd.allSpaceRel)maxT=Math.max(maxT,t); const pad=Math.max((maxT-minT)*0.08,30); minT-=pad;maxT+=pad; const range=maxT-minT; const toP=t=>((t-minT)/range*100); let inner=''; const sigP=toP(sig); inner+=`<div class="tl-prezone" style="left:0;width:${sigP}%"></div>`; inner+=`<div class="tl-signal-line" style="left:${sigP}%"></div>`; inner+=`<div class="tl-marker signal-mk" style="left:${sigP}%"></div>`; for(const s of rd.segments){ if(s.code==='KeyA'||s.code==='KeyD'||s.code==='KeyW'){ const l=toP(s.down),r=toP(s.up); const isA=s.code==='KeyA'; const isW=s.code==='KeyW'; const cls=isA?'key-a':isW?'key-w':'key-d'; const yOff=isA?-14:isW?-2:10; const w=Math.max(r-l,0.4); inner+=`<div class="tl-bar ${cls}" style="left:${l}%;width:${w}%;top:calc(50% + ${yOff}px)"></div>`; } } for(const t of rd.allSpaceRel){ inner+=`<div class="tl-marker space-mk" style="left:${toP(t)}%"></div>`; } const nTicks=6;let ticks=''; for(let i=0;i<=nTicks;i++){ const t=minT+(range*i/nTicks); const rel=Math.round(t-sig); const label=(rel>=0?'+':'')+rel; ticks+=`<div class="tl-label" style="left:${toP(t)}%">${label}</div>`; } ticks+=`<div class="tl-label top" style="left:${sigP}%;color:#fff;font-weight:bold">▼ сигнал</div>`; if(rd.spaceRel!=null){ ticks+=`<div class="tl-label top" style="left:${toP(rd.spaceRel)}%;color:var(--warn)">SPACE</div>`; } const resultClass=rd.ok?'ok':'err'; const targetInfo=rd.targetLabel?`<span style="margin-left:12px;font-weight:400;color:#aaa">Цель: ${rd.targetLabel}</span>`:''; return `<div class="round-card"> <div class="round-header"> <span class="round-num">Раунд ${rd.attempt}</span> <span class="round-result ${resultClass}">${rd.result}${targetInfo}</span> </div> <div class="timeline-wrap"> <div class="tl-axis"></div> ${inner} ${ticks} </div> </div>`; }
 
-// Кнопка ОК — старт режима 3
-$('startMode3').onclick = () => {
-  $('mode3Settings').style.display = 'none';
-  startGame(3);
-};
-  
+// Старт при загрузке
+init();
 </script>
 </body>
 </html>
