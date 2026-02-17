@@ -11,12 +11,15 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 :root{ --accent:#00e5ff;--purple:#7c4dff;--bg:#0a0a0f;--card:#14141f; --border:#1e1e2e;--success:#00e676;--fail:#ff3d71;--warn:#ffab00; }
+
 #menu{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:1000}
 #menu h1{font-size:42px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 #menu p{color:#888;font-size:14px;max-width:420px;text-align:center;line-height:1.6}
+
 .menu-btn{ padding:16px 36px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700; border:2px solid var(--border);border-radius:12px;background:var(--card);color:#fff; cursor:pointer;transition:all .2s;min-width:280px; }
 .menu-btn:hover{border-color:var(--accent);box-shadow:0 0 24px rgba(0,229,255,.15);transform:translateY(-2px)}
 .menu-btn span{color:#888;font-weight:300;font-size:14px;display:block;margin-top:4px}
+
 #gameArea{flex:1;display:flex;position:relative;overflow:hidden}
 .side{flex:1;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:900;font-family:'JetBrains Mono',monospace;opacity:.06;transition:all .15s;user-select:none;letter-spacing:4px}
 .side.active{opacity:1;color:#000}
@@ -24,7 +27,7 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 #right.active{background:var(--accent)}
 #ball{position:absolute;width:36px;height:36px;border-radius:50%;background:#fff;left:50%;top:0%;transform:translate(-50%,0%);display:none;box-shadow:0 0 20px rgba(255,255,255,.5);z-index:10}
 
-/* Изменен HUD для поддержки счета дуэли */
+/* HUD и очки дуэли */
 #hudWrapper{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:90vw}
 #duelScore{display:none; font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:900; background:rgba(0,0,0,0.5); padding:5px 15px; border-radius:8px; border:1px solid var(--accent);}
 #hud{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
@@ -33,7 +36,7 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 .dot.success{background:var(--success);border-color:var(--success);box-shadow:0 0 8px var(--success)}
 .dot.fail{background:var(--fail);border-color:var(--fail);box-shadow:0 0 8px var(--fail)}
 .dot.current{border-color:var(--accent);box-shadow:0 0 8px var(--accent)}
-.dot.draw{background:var(--warn);border-color:var(--warn);opacity:0.7;} /* Для ничьей в дуэли */
+.dot.draw{background:var(--warn);border-color:var(--warn);opacity:0.7;}
 
 #info{position:fixed;bottom:16px;width:100%;text-align:center;font-size:16px;font-family:'JetBrains Mono',monospace;color:#888;z-index:50;pointer-events:none}
 #resultsOverlay{position:fixed;inset:0;background:rgba(10,10,15,.97);z-index:2000;display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 20px}
@@ -60,25 +63,22 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 .tl-marker.signal-mk{background:#fff;box-shadow:0 0 8px #fff}
 .tl-marker.space-mk{background:var(--warn);box-shadow:0 0 6px var(--warn)}
 .tl-prezone{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.03);z-index:1;border-right:1px dashed rgba(255,255,255,.12)}
-.tl-legend{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap}
-.tl-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#888;font-family:'JetBrains Mono',monospace}
-.tl-legend-item .sw{width:14px;height:6px;border-radius:2px;flex-shrink:0}
-.tl-legend-item .sw.circle{width:7px;height:7px;border-radius:50%}
 .btn-row{display:flex;flex-direction:column;align-items:center;margin-top:32px;gap:10px;padding-bottom:40px}
 .restart-btn{ padding:16px 48px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700; border:2px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent); cursor:pointer;transition:all .2s; }
 .restart-btn:hover{background:var(--accent);color:#000}
 .back-btn{ padding:12px 32px;font-size:14px;font-family:'Outfit',sans-serif;font-weight:500; border:1px solid var(--border);border-radius:8px;background:transparent;color:#888; cursor:pointer;transition:all .2s; }
 .back-btn:hover{border-color:#888;color:#fff}
-/* ===== MODE 3 ===== */
+
+/* MODE 3 */
 #mode3Area{position:fixed;inset:0;display:none;overflow:hidden;z-index:40}
 #mode3Canvas{width:100%;height:100%;display:block}
 .sliderRow{ margin-bottom:16px; }
 .sliderRow label{ display:flex; justify-content:space-between; margin-bottom:6px; font-size:14px; color:#aaa; }
 .sliderRow input{ width:100%; }
 
-/* ===== DUEL LOBBY CSS ===== */
+/* DUEL LOBBY */
 #duelLobby{
-    position:fixed;inset:0;z-index:1600; background:var(--bg);
+    position:fixed; inset:0; z-index:1600; background:var(--bg);
     display:none; flex-direction:column; align-items:center; justify-content:center;
 }
 .lobby-card{
@@ -90,26 +90,27 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
     color:var(--accent); font-family:'JetBrains Mono', monospace; font-size:14px; border-radius:8px;
 }
 .duel-status{ margin: 20px 0; font-weight:bold; color: var(--warn); min-height: 24px;}
-
 </style>
 </head>
 
+<body>
+
 <div id="mode3Settings" style="position:fixed;inset:0;z-index:1500;background:rgba(10,10,15,.97);display:none;align-items:center;justify-content:center;">
-<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:420px;max-width:90vw;">
-<h2 style="font-size:28px;margin-bottom:16px">Настройка ударов (Соло)</h2>
-<div class="sliderRow"><label>Мимо ворот: <b><span id="pOut">30</span>%</b></label><input type="range" min="0" max="100" value="30" id="outRange"></div>
-<div class="sliderRow"><label>В створ (углы): <b><span id="pSide">50</span>%</b></label><input type="range" min="0" max="100" value="50" id="sideRange"></div>
-<div class="sliderRow"><label>По центру: <b><span id="pCenter">20</span>%</b></label><input type="range" min="0" max="100" value="20" id="centerRange"></div>
-<button class="menu-btn" style="margin-top:20px" id="startMode3">ОК <span>Запустить режим</span></button>
-</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:420px;max-width:90vw;">
+        <h2 style="font-size:28px;margin-bottom:16px">Настройка ударов (Соло)</h2>
+        <div class="sliderRow"><label>Мимо ворот: <b><span id="pOut">30</span>%</b></label><input type="range" min="0" max="100" value="30" id="outRange"></div>
+        <div class="sliderRow"><label>В створ (углы): <b><span id="pSide">50</span>%</b></label><input type="range" min="0" max="100" value="50" id="sideRange"></div>
+        <div class="sliderRow"><label>По центру: <b><span id="pCenter">20</span>%</b></label><input type="range" min="0" max="100" value="20" id="centerRange"></div>
+        <button class="menu-btn" style="margin-top:20px" id="startMode3">ОК <span>Запустить режим</span></button>
+    </div>
 </div>
 
 <div id="duelLobby">
     <div class="lobby-card" id="lobbyHost" style="display:none;">
         <h2>Создание дуэли 1x1</h2>
-        <p>Отправь эту ссылку сопернику. Игра начнется, когда он подключится.</p>
-        <input type="text" id="duelLinkInput" readonly>
-        <div class="duel-status" id="hostStatus">Ожидание подключения...</div>
+        <p>Скопируй ссылку и отправь другу. Игра начнется, когда он зайдет по ней.</p>
+        <input type="text" id="duelLinkInput" readonly onclick="this.select()">
+        <div class="duel-status" id="hostStatus">Инициализация сети...</div>
          <button class="back-btn" onclick="exitDuelLobby()">Отмена</button>
     </div>
     <div class="lobby-card" id="lobbyJoin" style="display:none;">
@@ -118,15 +119,13 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
     </div>
 </div>
 
-
-<body>
 <div id="menu">
-<h1>GK Reaction Test</h1>
-<p>Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. В режиме 3D используй <b>W</b> для центра или не прыгай, если мимо.</p>
-<button class="menu-btn" id="mode1">Режим 1 — Сигнал<span>Сторона подсвечивается</span></button>
-<button class="menu-btn" id="mode2">Режим 2 — Мяч<span>Мяч летит в угол</span></button>
-<button class="menu-btn" id="mode3btn">Режим 3 — Ворота 3D (Соло)<span>Мяч летит на тебя · 15 раундов</span></button>
-<button class="menu-btn" id="mode4btn" style="border-color:var(--purple)">Режим 4 — Дуэль 1x1<span>Онлайн · 15 раундов · Одинаковые удары</span></button>
+    <h1>GK Reaction Test</h1>
+    <p>Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. В режиме 3D используй <b>W</b> для центра.</p>
+    <button class="menu-btn" id="mode1">Режим 1 — Сигнал<span>Сторона подсвечивается</span></button>
+    <button class="menu-btn" id="mode2">Режим 2 — Мяч<span>Мяч летит в угол</span></button>
+    <button class="menu-btn" id="mode3btn">Режим 3 — Ворота 3D (Соло)<span>Мяч летит на тебя · 15 раундов</span></button>
+    <button class="menu-btn" id="mode4btn" style="border-color:var(--purple)">Режим 4 — Дуэль 1x1<span>Онлайн · 15 раундов</span></button>
 </div>
 
 <div id="hudWrapper">
@@ -135,16 +134,19 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 </div>
 
 <div id="gameArea">
-<div id="left" class="side">A</div>
-<div id="right" class="side">D</div>
-<div id="ball"></div>
+    <div id="left" class="side">A</div>
+    <div id="right" class="side">D</div>
+    <div id="ball"></div>
 </div>
+
 <div id="info"></div>
+
 <div id="mode3Area">
-<canvas id="mode3Canvas"></canvas>
+    <canvas id="mode3Canvas"></canvas>
 </div>
+
 <div id="resultsOverlay">
-<div id="resultsContent"></div>
+    <div id="resultsContent"></div>
 </div>
 
 <script>
@@ -171,17 +173,16 @@ const Duel = {
     conn: null,
     isHost: false,
     roundsTotal: 15,
-    targets: [], // Список целей на всю игру
-    currentRoundData: null, // Мой результат текущего раунда
-    opponentRoundData: null, // Результат соперника
+    targets: [],
+    currentRoundData: null,
+    opponentRoundData: null,
     myScore: 0,
     oppScore: 0,
-    opponentReactions: [] // Для итоговой статистики
+    opponentReactions: []
 };
 
 // --- INIT ---
 function init() {
-    // Проверка, открыта ли игра по ссылке-приглашению
     const urlParams = new URLSearchParams(window.location.search);
     const duelId = urlParams.get('duel');
     if (duelId) {
@@ -197,11 +198,9 @@ function resetGame(){
     $('left').classList.remove('active');$('right').classList.remove('active');
     $('ball').style.display='none';
     recording=false;waiting=false;
-    // Duel resets
     if(!Duel.active) {
        $('duelScore').style.display = 'none';
     } else {
-        // В дуэли HUD обновляется иначе
         $('duelScore').style.display = 'block';
         updateDuelScoreUI();
     }
@@ -221,31 +220,23 @@ function startGame(m){
         $('gameArea').style.display='none';
         $('mode3Area').style.display='block';
         initMode3Canvas();
-        // Для соло режима применяем настройки шансов
         if(mode===3) applyMode3Settings();
     } else {
         $('gameArea').style.display='flex';
         $('mode3Area').style.display='none';
     }
     resetGame();
-
-    // В дуэли старт контролируется хостом через сетевые события
-    if(mode !== 4) {
-        startRound();
-    }
+    if(mode !== 4) startRound();
 }
 
 $('mode1').onclick=()=>startGame(1);
 $('mode2').onclick=()=>startGame(2);
-// Mode 3 Соло - открываем настройки
 $('mode3btn').onclick=()=>{
     $('menu').style.display='none';
     $('mode3Settings').style.display='flex';
 };
-// Mode 4 Дуэль - открываем лобби хоста
 $('mode4btn').onclick=()=>hostDuel();
 
-// Настройки режима 3
 $('outRange').oninput=function(){$('pOut').textContent=this.value;};
 $('sideRange').oninput=function(){$('pSide').textContent=this.value;};
 $('centerRange').oninput=function(){$('pCenter').textContent=this.value;};
@@ -260,42 +251,39 @@ $('startMode3').onclick=()=>{
 };
 
 
-// ===================== DUEL NETWORKING (PEERJS) =====================
-
+// ===================== DUEL NETWORKING =====================
 function initPeer(callback) {
-    if(Duel.peer) { if(callback) callback(); return; }
-    // Используем публичный облачный сервер PeerJS
+    if(Duel.peer) { if(callback) callback(Duel.peer.id); return; }
     Duel.peer = new Peer();
     Duel.peer.on('open', (id) => {
         console.log('My Peer ID is: ' + id);
         if(callback) callback(id);
     });
     Duel.peer.on('connection', (conn) => {
-        // Входящее соединение (для хоста)
         handleConnection(conn);
     });
     Duel.peer.on('error', (err) => {
-        alert('Ошибка соединения: ' + err.type);
+        console.error(err);
+        alert('Ошибка PeerJS: ' + err.type);
         exitDuelLobby();
     });
 }
-
 
 function hostDuel() {
     $('menu').style.display='none';
     $('#duelLobby').style.display='flex';
     $('#lobbyHost').style.display='block';
-    $('#hostStatus').textContent = "Инициализация...";
+    $('#hostStatus').textContent = "Получение ID...";
 
     Duel.isHost = true;
     initPeer((id) => {
+        // Формируем ссылку
         const link = `${window.location.origin}${window.location.pathname}?duel=${id}`;
         $('duelLinkInput').value = link;
-        $('#hostStatus').textContent = "Ожидание подключения соперника...";
-        // Копируем в буфер для удобства
-        navigator.clipboard.writeText(link).then(() => {
-             $('#hostStatus').textContent += " (Ссылка скопирована!)";
-        }).catch(()=>{});
+        $('#hostStatus').textContent = "Ожидание соперника...";
+        
+        // Авто-копирование
+        navigator.clipboard.writeText(link).catch(()=>{});
     });
 }
 
@@ -317,20 +305,17 @@ function handleConnection(conn) {
     Duel.active = true;
 
     conn.on('open', () => {
-        console.log("Connected to peer!");
         if(Duel.isHost) {
-            $('#hostStatus').textContent = "Соперник подключен! Запуск...";
-            // Хост генерирует сценарий игры и отправляет клиенту
+            $('#hostStatus').textContent = "Соперник подключен! Старт...";
             Duel.targets = generateDuelTargets(Duel.roundsTotal);
             conn.send({ type: 'GAME_START', targets: Duel.targets });
-            // Небольшая задержка перед стартом у хоста
             setTimeout(() => {
                 $('#duelLobby').style.display='none';
                 startGame(4);
                 startDuelRoundProcess();
             }, 1000);
         } else {
-            $('#joinStatus').textContent = "Подключено! Ожидание старта...";
+            $('#joinStatus').textContent = "Подключено! Ждем хоста...";
         }
     });
 
@@ -338,7 +323,7 @@ function handleConnection(conn) {
         handleIncomingData(data);
     });
      conn.on('close', () => {
-        alert("Соединение разорвано.");
+        alert("Соперник отключился");
         backToMenu();
     });
 }
@@ -350,7 +335,6 @@ function handleIncomingData(data) {
                  Duel.targets = data.targets;
                  $('#duelLobby').style.display='none';
                  startGame(4);
-                 // Клиент начинает, как только получил цели
                  startDuelRoundProcess();
             }
             break;
@@ -368,23 +352,19 @@ function exitDuelLobby() {
     $('#lobbyHost').style.display='none';
     $('#lobbyJoin').style.display='none';
     $('menu').style.display='flex';
-    // Очистка URL от параметра дуэли
     window.history.replaceState({}, document.title, window.location.pathname);
 }
 
-// Генерация списка целей для дуэли (чтобы у обоих было одинаково)
 function generateDuelTargets(count) {
     const targets = [];
     const types = ['A', 'D', 'W', 'OUT_TOP', 'OUT_LEFT', 'OUT_RIGHT'];
-    // Простой рандом для примера. Можно усложнить баланс.
     for(let i=0; i<count; i++) {
          targets.push(types[Math.floor(Math.random() * types.length)]);
     }
     return targets;
 }
 
-// ===================== MODE 3 & DUEL CORE =====================
-// ... (код Canvas и геометрии остается прежним) ...
+// ===================== CANVAS & 3D =====================
 const M3={canvas:null,ctx:null,W:0,H:0};
 const stadiumImg = new Image(); stadiumImg.src = 'stadium_bg.png';
 function initMode3Canvas(){ M3.canvas=$('mode3Canvas'); M3.ctx=M3.canvas.getContext('2d'); resizeMode3(); window.removeEventListener('resize',resizeMode3); window.addEventListener('resize',resizeMode3); }
@@ -404,14 +384,11 @@ let m3TimeoutId=null;
 let idleBall = null;
 
 function startRound(){
-    // Если это дуэль, используется другая функция старта
     if(mode === 4) { startDuelRoundProcess(); return; }
-
     if(attempts>=maxAttempts){showResults();return}
     $('left').classList.remove('active'); $('right').classList.remove('active'); $('ball').style.display = 'none'; $('info').textContent = '';
     firstDir = null; firstDirTime = null; spaceTime = null; allKeySegments = []; allSpacePresses = [];
 
-    // ===== MODE 3 SOLO =====
     if(mode===3){
         clearMode3Ball(); showIdleBall();
         roundStartTime = performance.now(); recording = true; waiting = false; m3SpacePressed = false; roundNeedsSpace = false;
@@ -429,8 +406,7 @@ function startRound(){
         }, delay);
         return;
     }
-
-    // ===== MODE 1 / 2 =====
+    // Mode 1-2
     roundStartTime = performance.now(); recording = true; waiting = false; firstDir = null; firstDirTime = null; spaceTime = null; allKeySegments = []; allSpacePresses = [];
     const ball = $('ball'); const delay = Math.random()*1500 + 500;
     setTimeout(()=>{
@@ -441,23 +417,15 @@ function startRound(){
     }, delay);
 }
 
-
-// --- НОВАЯ ФУНКЦИЯ СТАРТА РАУНДА ДЛЯ ДУЭЛИ ---
 function startDuelRoundProcess() {
     if(attempts >= maxAttempts){ showResults(); return; }
-
-    // Сброс состояний раунда
-    Duel.currentRoundData = null;
-    Duel.opponentRoundData = null;
+    Duel.currentRoundData = null; Duel.opponentRoundData = null;
     $('info').textContent = `Раунд ${attempts+1} / ${maxAttempts}`;
     $('info').style.color = "#888";
-
     clearMode3Ball(); showIdleBall();
     roundStartTime = performance.now(); recording = true; waiting = false; m3SpacePressed = false; roundNeedsSpace = false;
-
     const delay = Math.random()*1500 + 600;
     setTimeout(()=>{
-        // Берем цель из заранее сгенерированного списка
         target = Duel.targets[attempts];
         signalTime = performance.now(); waiting = true;
         animateBallMode3(target, ()=>{
@@ -469,7 +437,6 @@ function startDuelRoundProcess() {
         });
     }, delay);
 }
-
 
 document.addEventListener('keydown',e=>{
     if(!recording)return; if(e.repeat)return; const now=performance.now(); const code=e.code;
@@ -498,11 +465,9 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('keyup',e=>{ const now=performance.now(); const code=e.code; if(allKeyDowns[code]){ allKeySegments.push({code,down:allKeyDowns[code],up:now}); delete allKeyDowns[code]; } });
 function finalizeKeys(endTime){ for(const code of Object.keys(allKeyDowns)){ allKeySegments.push({code,down:allKeyDowns[code],up:endTime}); } allKeyDowns={}; }
 
-// --- ИЗМЕНЕННАЯ ФУНКЦИЯ ОЦЕНКИ ДЛЯ РЕЖИМА 3 И 4 ---
 function evaluateMode3(){
     let resultMsg, ok=false;
     const reaction=spaceTime?Math.round(spaceTime-signalTime):null;
-
     if(!roundNeedsSpace){
         if(m3SpacePressed){ resultMsg='Мяч мимо — не прыгай!'; } else { ok=true; resultMsg='Мяч мимо — верно!'; }
     }else{
@@ -512,32 +477,17 @@ function evaluateMode3(){
         else if(firstDir!==target){ resultMsg='Неверная сторона'; }
         else { ok=true; resultMsg=`${reaction} мс`; }
     }
-
     let targetLabel;
     switch(target){ case 'A':targetLabel='← Левый угол';break; case 'D':targetLabel='→ Правый угол';break; case 'W':targetLabel='↑ Центр ворот';break; case 'OUT_TOP':targetLabel='⬆ Над воротами';break; case 'OUT_LEFT':targetLabel='⬅ Слева от ворот';break; case 'OUT_RIGHT':targetLabel='➡ Справа от ворот';break; }
-
-    const roundStats = {
-        attempt:attempts+1, target, firstDir, ok, result:resultMsg,
-        reactionMs:ok&&reaction?reaction:null,
-        signalRel:signalTime-roundStartTime,
-        spaceRel:spaceTime?spaceTime-roundStartTime:null,
-        allSpaceRel:allSpacePresses.map(t=>t-roundStartTime),
-        segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})),
-        targetLabel
-    };
+    const roundStats = { attempt:attempts+1, target, firstDir, ok, result:resultMsg, reactionMs:ok&&reaction?reaction:null, signalRel:signalTime-roundStartTime, spaceRel:spaceTime?spaceTime-roundStartTime:null, allSpaceRel:allSpacePresses.map(t=>t-roundStartTime), segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})), targetLabel };
     roundData.push(roundStats);
 
-    // --- СПЕЦИФИКА ДУЭЛИ ---
     if(mode === 4) {
-        // Сохраняем свой результат
-        Duel.currentRoundData = { ok: ok, reaction: (ok && reaction) ? reaction : 99999 }; // 99999 если ошибка, для простоты сравнения
+        Duel.currentRoundData = { ok: ok, reaction: (ok && reaction) ? reaction : 99999 };
         $('info').textContent = "Ожидание соперника...";
-        // Отправляем результат сопернику
         Duel.conn.send({ type: 'ROUND_RESULT', result: Duel.currentRoundData });
-        // Проверяем, готовы ли оба
         checkDuelRoundComplete();
     } else {
-        // Соло режим - как обычно
         if(ok&&reaction!==null) reactions.push(reaction);
         const dot=$('dot'+attempts); if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
         $('info').textContent=(ok?'✅ ':'❌ ')+resultMsg;
@@ -546,96 +496,53 @@ function evaluateMode3(){
     }
 }
 
-// --- ЛОГИКА ПОДСЧЕТА ОЧКОВ ДУЭЛИ ---
 function checkDuelRoundComplete() {
-    // Ждем, пока будут результаты обоих игроков
     if(Duel.currentRoundData && Duel.opponentRoundData) {
         const my = Duel.currentRoundData;
         const opp = Duel.opponentRoundData;
-        let roundWinner = null; // 'me', 'opp', or null (draw)
-
-        // Правила начисления очков:
-        // 1. Если оба ошиблись или оба правы с одинаковым временем (вряд ли, но все же) -> Ничья, 0 очков.
-        // 2. Если один прав, другой ошибся -> Очко правому.
-        // 3. Если оба правы -> Очко тому, кто быстрее.
-
-        if (my.ok && !opp.ok) {
-            Duel.myScore++; roundWinner = 'me';
-        } else if (!my.ok && opp.ok) {
-            Duel.oppScore++; roundWinner = 'opp';
-        } else if (my.ok && opp.ok) {
-            if(my.reaction < opp.reaction) {
-                Duel.myScore++; roundWinner = 'me';
-            } else if (opp.reaction < my.reaction) {
-                Duel.oppScore++; roundWinner = 'opp';
-            }
-            // else draw
+        let roundWinner = null; 
+        if (my.ok && !opp.ok) { Duel.myScore++; roundWinner = 'me'; } 
+        else if (!my.ok && opp.ok) { Duel.oppScore++; roundWinner = 'opp'; } 
+        else if (my.ok && opp.ok) {
+            if(my.reaction < opp.reaction) { Duel.myScore++; roundWinner = 'me'; } 
+            else if (opp.reaction < my.reaction) { Duel.oppScore++; roundWinner = 'opp'; }
         }
-        // else both fail -> draw
-
-        // Обновление HUD и точки
         updateDuelScoreUI();
         const dot=$('dot'+attempts);
         if(dot){
             dot.classList.remove('current');
             if(roundWinner === 'me') dot.classList.add('success');
             else if(roundWinner === 'opp') dot.classList.add('fail');
-            else dot.classList.add('draw'); // Желтая точка для ничьей
+            else dot.classList.add('draw');
         }
-
-        // Показать инфо о раунде
         let infoText = "";
         if(my.ok) infoText += `Вы: ${my.reaction}мс. `; else infoText += `Вы: Ошибка. `;
         if(opp.ok) infoText += `Соп: ${opp.reaction}мс.`; else infoText += `Соп: Ошибка.`;
         $('info').textContent = infoText;
         $('info').style.color = roundWinner === 'me' ? 'var(--success)' : (roundWinner === 'opp' ? 'var(--fail)' : 'var(--warn)');
-
-        // Сохраняем реакцию соперника для статистики
         if(opp.ok) Duel.opponentReactions.push(opp.reaction);
-
         attempts++;
-        // Запуск следующего раунда через паузу
         setTimeout(startDuelRoundProcess, 2000);
     }
 }
-
-function updateDuelScoreUI() {
-    $('duelScore').innerHTML = `<span style="color:var(--accent)">YOU</span> ${Duel.myScore} : ${Duel.oppScore} <span style="color:var(--fail)">OPP</span>`;
-}
-
-
-function evaluate(){
-    let result,ok=false;
-    if(!firstDir){ result='SPACE без направления'; }else if(spaceTime+tolerance<firstDirTime){ result='SPACE раньше направления'; }else if(firstDir!==target){ result='Неверная сторона'; }else{ const reaction=Math.round(spaceTime-signalTime); reactions.push(reaction); result=`${reaction} мс`;ok=true; }
-    const dot=$('dot'+attempts); if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
-    roundData.push({ attempt:attempts+1,target,firstDir,ok,result, reactionMs:ok?Math.round(spaceTime-signalTime):null, signalRel:signalTime-roundStartTime, spaceRel:spaceTime?spaceTime-roundStartTime:null, allSpaceRel:allSpacePresses.map(t=>t-roundStartTime), segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})) });
-    attempts++; $('info').textContent=(ok?'✅ ':'❌ ')+result; setTimeout(startRound,700);
-}
-
+function updateDuelScoreUI() { $('duelScore').innerHTML = `<span style="color:var(--accent)">YOU</span> ${Duel.myScore} : ${Duel.oppScore} <span style="color:var(--fail)">OPP</span>`; }
+function evaluate(){ let result,ok=false; if(!firstDir){ result='SPACE без направления'; }else if(spaceTime+tolerance<firstDirTime){ result='SPACE раньше направления'; }else if(firstDir!==target){ result='Неверная сторона'; }else{ const reaction=Math.round(spaceTime-signalTime); reactions.push(reaction); result=`${reaction} мс`;ok=true; } const dot=$('dot'+attempts); if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')} roundData.push({ attempt:attempts+1,target,firstDir,ok,result, reactionMs:ok?Math.round(spaceTime-signalTime):null, signalRel:signalTime-roundStartTime, spaceRel:spaceTime?spaceTime-roundStartTime:null, allSpaceRel:allSpacePresses.map(t=>t-roundStartTime), segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})) }); attempts++; $('info').textContent=(ok?'✅ ':'❌ ')+result; setTimeout(startRound,700); }
 function showResults(){
     $('info').textContent='';
     if(mode===3 || mode===4)$('mode3Area').style.display='none';
     $('resultsOverlay').classList.add('show');
-
     let html = "";
     if(mode === 4) {
-        // --- РЕЗУЛЬТАТЫ ДУЭЛИ ---
         let resultTitle = "Ничья!";
         if(Duel.myScore > Duel.oppScore) resultTitle = "Вы победили! 🏆";
         if(Duel.oppScore > Duel.myScore) resultTitle = "Соперник победил";
-
         html += `<div class="res-title">${resultTitle}</div>`;
         html += `<div class="res-avg" style="font-size:28px">Счет: <span style="color:var(--accent)">${Duel.myScore}</span> - <span style="color:var(--fail)">${Duel.oppScore}</span></div>`;
-
-        // Средняя реакция (только успешные)
         const myAvg = reactions.length ? Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length) : '—';
         const oppAvg = Duel.opponentReactions.length ? Math.round(Duel.opponentReactions.reduce((a,b)=>a+b,0)/Duel.opponentReactions.length) : '—';
         html += `<div class="res-avg" style="margin-bottom:20px">Ср. реакция (Вы): ${myAvg} мс <br> Ср. реакция (Соп): ${oppAvg} мс</div>`;
-
         html += `<div class="btn-row"> <button class="back-btn" onclick="backToMenu()">Выход в меню</button> </div>`;
-
     } else {
-        // --- ОБЫЧНЫЕ РЕЗУЛЬТАТЫ ---
         let avg='—'; if(reactions.length)avg=Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length)+' мс';
         html=`<div class="res-title">Результаты</div><div class="res-avg">Средняя реакция: ${avg}</div>`;
         for(const rd of roundData)html+=buildRoundCard(rd);
@@ -643,36 +550,14 @@ function showResults(){
     }
     $('resultsContent').innerHTML=html;
 }
-
-// Функции навигации
 function backToMenu(){
-    // Если была дуэль, разрываем соединение
-    if(Duel.active) {
-        if(Duel.conn) Duel.conn.close();
-        if(Duel.peer) Duel.peer.destroy();
-        Duel.peer = null; Duel.conn = null; Duel.active = false;
-    }
-    $('resultsOverlay').classList.remove('show');
-    $('menu').style.display='flex';
-    $('gameArea').style.display='none';
-    $('mode3Area').style.display='none';
-    $('duelScore').style.display='none'; // Скрыть счет
-    // Сброс URL
+    if(Duel.active) { if(Duel.conn) Duel.conn.close(); if(Duel.peer) Duel.peer.destroy(); Duel.peer = null; Duel.conn = null; Duel.active = false; }
+    $('resultsOverlay').classList.remove('show'); $('menu').style.display='flex'; $('gameArea').style.display='none'; $('mode3Area').style.display='none'; $('duelScore').style.display='none';
     window.history.replaceState({}, document.title, window.location.pathname);
 }
-
-function restartSameMode(){
-    $('resultsOverlay').classList.remove('show');
-    // Для соло режимов просто перезапускаем
-    if(mode !== 4) {
-       startGame(mode);
-    }
-}
-
-// --- Вспомогательная функция построения карточки (без изменений) ---
+function restartSameMode(){ $('resultsOverlay').classList.remove('show'); if(mode !== 4) { startGame(mode); } }
 function buildRoundCard(rd){ const sig=rd.signalRel; let maxT=sig+200,minT=0; for(const s of rd.segments){maxT=Math.max(maxT,s.up);minT=Math.min(minT,s.down);} if(rd.spaceRel)maxT=Math.max(maxT,rd.spaceRel); for(const t of rd.allSpaceRel)maxT=Math.max(maxT,t); const pad=Math.max((maxT-minT)*0.08,30); minT-=pad;maxT+=pad; const range=maxT-minT; const toP=t=>((t-minT)/range*100); let inner=''; const sigP=toP(sig); inner+=`<div class="tl-prezone" style="left:0;width:${sigP}%"></div>`; inner+=`<div class="tl-signal-line" style="left:${sigP}%"></div>`; inner+=`<div class="tl-marker signal-mk" style="left:${sigP}%"></div>`; for(const s of rd.segments){ if(s.code==='KeyA'||s.code==='KeyD'||s.code==='KeyW'){ const l=toP(s.down),r=toP(s.up); const isA=s.code==='KeyA'; const isW=s.code==='KeyW'; const cls=isA?'key-a':isW?'key-w':'key-d'; const yOff=isA?-14:isW?-2:10; const w=Math.max(r-l,0.4); inner+=`<div class="tl-bar ${cls}" style="left:${l}%;width:${w}%;top:calc(50% + ${yOff}px)"></div>`; } } for(const t of rd.allSpaceRel){ inner+=`<div class="tl-marker space-mk" style="left:${toP(t)}%"></div>`; } const nTicks=6;let ticks=''; for(let i=0;i<=nTicks;i++){ const t=minT+(range*i/nTicks); const rel=Math.round(t-sig); const label=(rel>=0?'+':'')+rel; ticks+=`<div class="tl-label" style="left:${toP(t)}%">${label}</div>`; } ticks+=`<div class="tl-label top" style="left:${sigP}%;color:#fff;font-weight:bold">▼ сигнал</div>`; if(rd.spaceRel!=null){ ticks+=`<div class="tl-label top" style="left:${toP(rd.spaceRel)}%;color:var(--warn)">SPACE</div>`; } const resultClass=rd.ok?'ok':'err'; const targetInfo=rd.targetLabel?`<span style="margin-left:12px;font-weight:400;color:#aaa">Цель: ${rd.targetLabel}</span>`:''; return `<div class="round-card"> <div class="round-header"> <span class="round-num">Раунд ${rd.attempt}</span> <span class="round-result ${resultClass}">${rd.result}${targetInfo}</span> </div> <div class="timeline-wrap"> <div class="tl-axis"></div> ${inner} ${ticks} </div> </div>`; }
 
-// Старт при загрузке
 init();
 </script>
 </body>
