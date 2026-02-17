@@ -217,13 +217,20 @@ const tolerance=20;
 let roundNeedsSpace=false;
 
 function resetGame(){
-  attempts=0;roundData=[];reactions=[];
-  $('hud').innerHTML='';$('info').textContent='';
+  attempts = 0;
+  roundData = [];
+  reactions = [];
+
+  $('hud').innerHTML = '';
+  $('info').textContent = '';
   $('resultsOverlay').classList.remove('show');
-  $('left').classList.remove('active');$('right').classList.remove('active');
-  $('ball').style.display='none';
-  recording=false;waiting=false;
-  resetGame();
+  $('left').classList.remove('active');
+  $('right').classList.remove('active');
+  $('ball').style.display = 'none';
+
+  recording = false;
+  waiting = false;
+
   buildHud();
 }
 
