@@ -261,10 +261,9 @@ function createDuel(){
   peer.on('open', id => {
     const link = `${location.origin}${location.pathname}?duel=${id}`;
     alert(
-  'Скопируй ссылку и отправь другу:\n\n' + link +
-  '\n\nОжидание подключения...'
-);
-});
+      'Скопируй ссылку и отправь другу:\n\n' + link +
+      '\n\nОжидание подключения...'
+    );
   });
 
   peer.on('connection', c => {
@@ -272,7 +271,7 @@ function createDuel(){
     setupDuelConnection();
     startDuelAsHost();
   });
-}  
+}
   function joinDuel(roomId){
   isHost = false;
   peer = new Peer();
