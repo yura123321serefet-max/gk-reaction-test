@@ -358,12 +358,19 @@ function startDuelAsHost(){
   const r = duelRounds[duelRoundIndex];
 
   setTimeout(()=>{
-    target = r.target;
-    signalTime = performance.now();
-    waiting = true;
+  target = r.target;
+  signalTime = performance.now();
 
-    animateBallMode3(target, ()=>{});
-  }, r.delay);
+  // 🔥 ВОТ ЭТОГО НЕ ХВАТАЛО
+  recording = true;
+  waiting = true;
+  m3SpacePressed = false;
+  roundNeedsSpace = false;
+  firstDir = null;
+  spaceTime = null;
+
+  animateBallMode3(target, ()=>{});
+}, r.delay);
 }
   function checkRoundFinish(i){
     if(!isHost) return;
@@ -377,7 +384,7 @@ function startDuelAsHost(){
     if(a.reactionMs < b.reactionMs) duelScore.me++;
     else if(b.reactionMs < a.reactionMs) duelScore.enemy++;
   }
-
+duelRoundIndex++;
   startDuelRound();
 }
   function showDuelResults(){
@@ -1087,7 +1094,7 @@ if(conn){
     result: res
   });
 
-  duelRoundIndex++;
+ 
 }
   attempts++;
   $('info').textContent=(ok?'✅ ':'❌ ')+result;
