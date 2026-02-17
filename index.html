@@ -267,10 +267,14 @@ function createDuel(){
 
   peer.on('open', id => {
     const link = `${location.origin}${location.pathname}?duel=${id}`;
-    alert(
-      'Скопируй ссылку и отправь другу:\n\n' + link +
-      '\n\nОжидание подключения...'
-    );
+
+    navigator.clipboard.writeText(link).then(() => {
+      alert(
+        'Ссылка скопирована в буфер обмена ✅\n\n' +
+        'Просто вставь её другу (Ctrl + V)\n\n' +
+        link
+      );
+    });
   });
 
   peer.on('connection', c => {
