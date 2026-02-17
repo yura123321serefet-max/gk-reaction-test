@@ -347,8 +347,12 @@ function startDuelAsHost(){
   $('mode3Area').style.display = 'block';
 
   initMode3Canvas();
+  resizeMode3();        // ✅
+  drawMode3Scene();     // ✅
+
   startDuelRound();
 }
+
   function startDuelRound(){
   if(duelRoundIndex >= 15){
     showDuelResults();
@@ -361,11 +365,9 @@ function startDuelAsHost(){
   target = r.target;
   signalTime = performance.now();
 
-  // 🔥 ВОТ ЭТОГО НЕ ХВАТАЛО
-  recording = true;
-  waiting = true;
+  recording = true;        // ✅
+  waiting = true;          // ✅
   m3SpacePressed = false;
-  roundNeedsSpace = false;
   firstDir = null;
   spaceTime = null;
 
@@ -373,7 +375,8 @@ function startDuelAsHost(){
 }, r.delay);
 }
   function checkRoundFinish(i){
-    if(!isHost) return;
+  if(!isHost) return;
+
   const a = duelResults.me[i];
   const b = duelResults.enemy[i];
   if(!a || !b) return;
@@ -384,7 +387,8 @@ function startDuelAsHost(){
     if(a.reactionMs < b.reactionMs) duelScore.me++;
     else if(b.reactionMs < a.reactionMs) duelScore.enemy++;
   }
-duelRoundIndex++;
+
+  duelRoundIndex++;   // ✅ ТОЛЬКО ЗДЕСЬ
   startDuelRound();
 }
   function showDuelResults(){
