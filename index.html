@@ -1,256 +1,237 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GK Reaction Test — DUEL 3D</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
-<style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
-    :root{ --accent:#00e5ff;--purple:#7c4dff;--bg:#0a0a0f;--card:#14141f; --border:#1e1e2e;--success:#00e676;--fail:#ff3d71;--warn:#ffab00; }
-
-    /* Меню */
-    #menu{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:1000}
-    #menu h1{font-size:42px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px}
-    .menu-btn{ padding:16px 36px;font-size:18px;font-weight:700; border:2px solid var(--border);border-radius:12px;background:var(--card);color:#fff; cursor:pointer;transition:all .2s;min-width:300px; }
-    .menu-btn:hover{border-color:var(--accent);transform:translateY(-2px)}
-
-    /* Игровая зона */
-    #gameArea{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:#0f0f1a;overflow:hidden;}
-    #goal{position:relative;width:600px;height:300px;border:8px solid #fff;border-bottom:none;box-shadow:0 0 50px rgba(255,255,255,0.1);z-index:1}
-    #ball{position:absolute;width:50px;height:50px;background:#fff;border-radius:50%;bottom:20px;left:50%;transform:translateX(-50%);transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);display:none;z-index:10;box-shadow:0 0 20px #fff}
-
-    /* Индикаторы сторон (для визуала Режима 3) */
-    .target-hint{position:absolute;font-size:80px;font-weight:900;color:var(--accent);opacity:0;transition:0.1s;z-index:5}
-    .hint-a{left:50px;top:50%}
-    .hint-d{right:50px;top:50%}
-    .hint-w{top:20px;left:50%;transform:translateX(-50%)}
-
-    /* HUD */
-    #hudWrapper{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;align-items:center;gap:15px}
-    #duelScore{display:none; font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:900; background:rgba(0,0,0,0.8); padding:8px 25px; border-radius:12px; border:2px solid var(--purple); color:#fff;}
-    #hud{display:flex;gap:8px;}
-    .dot{width:14px;height:14px;border-radius:50%;border:2px solid #333;background:#222}
-    .dot.success{background:var(--success);border-color:var(--success)}
-    .dot.fail{background:var(--fail);border-color:var(--fail)}
-    .dot.draw{background:var(--warn);border-color:var(--warn)}
-    .dot.current{border-color:var(--accent);box-shadow:0 0 10px var(--accent)}
-
-    #info{position:fixed;bottom:20%;width:100%;text-align:center;font-size:28px;font-weight:700;z-index:50;text-transform:uppercase}
-
-    /* Лобби */
-    #duelLobby{position:fixed;inset:0;z-index:1600;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;}
-    .lobby-card{background:var(--card); border:2px solid var(--border); border-radius:20px; padding:40px; width:450px; text-align:center;}
-    #duelLinkInput{width:100%; padding:12px; margin:20px 0; background:#000; border:1px solid var(--accent); color:var(--accent); font-family:monospace; border-radius:8px; text-align:center}
-
-    #resultsOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:2000;display:none;flex-direction:column;align-items:center;justify-content:center;}
-    #resultsOverlay.show{display:flex}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GK Reaction Test - DUEL</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        :root {
+            --bg: #0e0e0e; --card: #1a1a1a; --accent: #007bff;
+            --success: #28a745; --warn: #ffc107; --err: #dc3545; --text: #e0e0e0;
+        }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        .menu-card, .mode-area { background: var(--card); padding: 20px; border-radius: 12px; margin-top: 50px; width: 90%; max-width: 500px; text-align: center; }
+        button { background: var(--accent); border: none; color: white; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 5px; transition: 0.2s; }
+        button:hover { opacity: 0.8; }
+        input[type="text"] { background: #333; border: 1px solid #444; color: white; padding: 10px; border-radius: 4px; width: 80%; }
+        
+        /* Стили для дуэли */
+        #duelLobby, #duelFinish {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 1000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { padding: 8px; border-bottom: 1px solid #333; text-align: center; }
+        .win-star { color: var(--warn); font-weight: bold; }
+    </style>
 </head>
 <body>
 
-<div id="duelLobby">
-    <div class="lobby-card">
-        <h2 id="lobbyTitle">Дуэль Режим 3</h2>
-        <p id="lobbyDesc">Отправь ссылку другу (она скопирована):</p>
-        <input type="text" id="duelLinkInput" readonly>
-        <div id="lobbyStatus" style="color:var(--warn)">Ожидание подключения...</div>
-        <button class="menu-btn" style="min-width:auto;margin-top:20px" onclick="location.href=location.pathname">Отмена</button>
-    </div>
-</div>
-
-<div id="menu">
+<div id="menu" class="menu-card">
     <h1>GK Reaction Test</h1>
-    <button class="menu-btn" onclick="location.reload()">Одиночный режим</button>
-    <button class="menu-btn" id="mode4btn" style="border-color:var(--purple)">РЕЖИМ 4: ДУЭЛЬ (3D)<span>15 раундов 1x1</span></button>
+    <button onclick="startMode(3)">Режим 3 (Обычный)</button>
+    <button onclick="initDuel()" style="background: #6f42c1;">РЕЖИМ 4: ДУЭЛЬ</button>
 </div>
 
-<div id="hudWrapper">
-    <div id="duelScore">ВЫ 0 : 0 ОПП</div>
-    <div id="hud"></div>
+<div id="duelLobby">
+    <h2>Дуэль: Ожидание друга</h2>
+    <p>Отправь эту ссылку другу:</p>
+    <input type="text" id="shareLink" readonly onclick="this.select()">
+    <p id="connectionStatus">Создание комнаты...</p>
+    <button onclick="location.href=location.pathname">Отмена</button>
 </div>
 
-<div id="gameArea">
-    <div id="goal"></div>
-    <div id="ball"></div>
-    <div id="hint-A" class="target-hint hint-a">A</div>
-    <div id="hint-D" class="target-hint hint-d">D</div>
-    <div id="hint-W" class="target-hint hint-w">W</div>
+<div id="gameArea" class="mode-area" style="display:none;">
+    <h2 id="status">Приготовьтесь...</h2>
+    <div id="targetDisplay" style="font-size: 48px; margin: 20px;"></div>
+    <p>Раунд: <span id="roundNum">0</span>/15</p>
 </div>
 
-<div id="info"></div>
-
-<div id="resultsOverlay">
-    <h1 id="resTitle" style="font-size:60px;margin-bottom:10px"></h1>
-    <h2 id="resScore" style="color:var(--accent);font-size:40px;margin-bottom:30px"></h2>
-    <button class="menu-btn" onclick="location.reload()">В меню</button>
+<div id="duelFinish">
+    <h1 id="duelWinnerText">КТО ВЫИГРАЛ?</h1>
+    <h2 id="duelScoreDetail">0 : 0</h2>
+    <div id="duelTable" style="width: 90%; max-width: 400px; max-height: 50vh; overflow-y: auto;"></div>
+    <button onclick="location.href=location.pathname" style="margin-top: 20px;">В МЕНЮ</button>
 </div>
 
 <script>
-const $=id=>document.getElementById(id);
-let attempts=0, maxAttempts=15;
-let target=null, signalTime=0, canReact=false;
-let myScore=0, oppScore=0;
-let peer, conn, isHost=false, duelTargets=[];
-let myRoundDone=false, oppRoundDone=false;
-let myResultData=null, oppResultData=null;
+// --- ПЕРЕМЕННЫЕ ИГРЫ ---
+let mode = 0;
+let attempt = 0;
+const maxAttempts = 15;
+let gameActive = false;
+let signalTime = 0;
+let results = []; // Локальные результаты (твои)
 
-window.onload = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const joinId = urlParams.get('duel');
-    if(joinId) joinDuel(joinId);
-};
+// --- ПЕРЕМЕННЫЕ СЕТИ ---
+let peer = null;
+let conn = null;
+let isHost = false;
+let duelSequence = [];
+let opponentResults = [];
 
-$('mode4btn').onclick = hostDuel;
+const $ = id => document.getElementById(id);
 
-function hostDuel() {
-    isHost = true;
-    $('menu').style.display='none';
-    $('duelLobby').style.display='flex';
+// --- ЛОГИКА ДУЭЛИ ---
+
+function initDuel() {
     peer = new Peer();
-    peer.on('open', id => {
-        const link = window.location.origin + window.location.pathname + '?duel=' + id;
-        $('duelLinkInput').value = link;
-        navigator.clipboard.writeText(link);
-        $('lobbyStatus').textContent = "Ссылка скопирована! Ждем соперника...";
+    
+    peer.on('open', (id) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const joinId = urlParams.get('join');
+
+        if (!joinId) {
+            isHost = true;
+            const link = window.location.origin + window.location.pathname + '?join=' + id;
+            $('shareLink').value = link;
+            $('duelLobby').style.display = 'flex';
+            $('connectionStatus').textContent = "Ждем подключения игрока...";
+            // Генерируем 15 раундов заранее
+            duelSequence = generateSequence(15);
+        } else {
+            isHost = false;
+            $('duelLobby').style.display = 'flex';
+            $('connectionStatus').textContent = "Подключение к другу...";
+            conn = peer.connect(joinId);
+            setupConnection();
+        }
     });
-    peer.on('connection', c => { conn = c; setupConnection(); });
-}
 
-function joinDuel(id) {
-    isHost = false;
-    $('menu').style.display='none';
-    $('duelLobby').style.display='flex';
-    $('lobbyTitle').textContent = "Подключение...";
-    peer = new Peer();
-    peer.on('open', () => { conn = peer.connect(id); setupConnection(); });
+    peer.on('connection', (c) => {
+        conn = c;
+        setupConnection();
+        // Хост отправляет последовательность гостю
+        setTimeout(() => {
+            conn.send({ type: 'START', sequence: duelSequence });
+        }, 1000);
+    });
 }
 
 function setupConnection() {
-    conn.on('open', () => {
-        if(isHost) {
-            // Генерируем 15 раундов: A, D, W или OUT (мимо)
-            const types = ['A','D','W','OUT'];
-            duelTargets = Array.from({length:15}, () => types[Math.floor(Math.random()*4)]);
-            conn.send({type:'START', targets: duelTargets});
+    conn.on('data', (data) => {
+        if (data.type === 'START') {
+            duelSequence = data.sequence;
+            $('duelLobby').style.display = 'none';
             startDuelGame();
         }
+        if (data.type === 'RESULT') {
+            opponentResults.push(data.val);
+            checkDuelFinish();
+        }
     });
-    conn.on('data', data => {
-        if(data.type === 'START') { duelTargets = data.targets; startDuelGame(); }
-        if(data.type === 'RESULT') { oppResultData = data.result; oppRoundDone = true; checkRoundEnd(); }
+    
+    conn.on('open', () => {
+        if (!isHost) $('connectionStatus').textContent = "Соединение установлено! Загрузка...";
     });
+}
+
+function generateSequence(n) {
+    const targets = ['A', 'D', 'W', 'OUT'];
+    const seq = [];
+    for(let i=0; i<n; i++) {
+        seq.push({
+            target: targets[Math.floor(Math.random() * targets.length)],
+            delay: Math.random() * 2000 + 1000
+        });
+    }
+    return seq;
 }
 
 function startDuelGame() {
-    $('duelLobby').style.display='none';
-    $('duelScore').style.display='block';
-    buildHud();
-    startRound();
+    mode = 4;
+    attempt = 0;
+    results = [];
+    opponentResults = [];
+    $('menu').style.display = 'none';
+    $('gameArea').style.display = 'block';
+    nextRound();
 }
 
-function buildHud() {
-    $('hud').innerHTML = Array.from({length:maxAttempts}, (_,i)=>`<div class="dot" id="dot${i}"></div>`).join('');
-}
-
-function startRound() {
-    if(attempts >= maxAttempts) return endDuel();
+function nextRound() {
+    if (attempt >= maxAttempts) return;
+    attempt++;
+    $('roundNum').textContent = attempt;
+    $('status').textContent = "ПРИГОТОВИТЬСЯ...";
+    $('targetDisplay').textContent = "";
     
-    myRoundDone = false; oppRoundDone = false;
-    myResultData = null; oppResultData = null;
-    canReact = false;
-    
-    // Сброс визуала
-    $('ball').style.display = 'none';
-    $('ball').style.bottom = '20px';
-    $('ball').style.left = '50%';
-    document.querySelectorAll('.target-hint').forEach(el => el.style.opacity = '0');
-    $('dot' + attempts).classList.add('current');
-    
-    $('info').textContent = "Приготовься...";
-    $('info').style.color = "#888";
+    const currentRound = duelSequence[attempt-1];
     
     setTimeout(() => {
-        target = duelTargets[attempts];
-        signalTime = performance.now();
-        canReact = true;
-        
-        $('ball').style.display = 'block';
-        $('info').textContent = "РЕАГИРУЙ!";
-        $('info').style.color = "#fff";
+        signalTime = Date.now();
+        $('status').textContent = "ЖМИ!";
+        $('targetDisplay').textContent = currentRound.target;
+        gameActive = true;
+    }, currentRound.delay);
+}
 
-        // Анимация мяча
-        setTimeout(() => {
-            if(target === 'A') { $('ball').style.left = '10%'; $('ball').style.bottom = '250px'; $('hint-A').style.opacity='1'; }
-            if(target === 'D') { $('ball').style.left = '90%'; $('ball').style.bottom = '250px'; $('hint-D').style.opacity='1'; }
-            if(target === 'W') { $('ball').style.left = '50%'; $('ball').style.bottom = '280px'; $('hint-W').style.opacity='1'; }
-            if(target === 'OUT') { $('ball').style.left = '110%'; $('ball').style.bottom = '400px'; $('info').textContent = "МИМО!"; }
-        }, 50);
+// Обработка нажатий (упрощенно для примера)
+window.onkeydown = (e) => {
+    if (!gameActive) return;
+    gameActive = false;
+    
+    const reaction = Date.now() - signalTime;
+    const key = e.code === 'KeyA' ? 'A' : e.code === 'KeyD' ? 'D' : e.code === 'KeyW' ? 'W' : 'SPACE';
+    const correct = key === duelSequence[attempt-1].target || (key === 'SPACE' && duelSequence[attempt-1].target === 'OUT');
+    
+    const res = { ok: correct, reactionMs: reaction, target: duelSequence[attempt-1].target };
+    results.push(res);
+    
+    // Отправляем другу
+    conn.send({ type: 'RESULT', val: res });
+    
+    $('status').textContent = correct ? `ВЕРНО! ${reaction}мс` : "ОШИБКА!";
+    
+    setTimeout(() => {
+        if (attempt < maxAttempts) nextRound();
+        else checkDuelFinish();
+    }, 1500);
+};
 
-        // Авто-завершение если мяч "OUT" и игрок не нажал
-        if(target === 'OUT') {
-            setTimeout(() => { if(!myRoundDone) finishMyRound(true, 0); }, 1000);
+function checkDuelFinish() {
+    if (results.length === 15 && opponentResults.length === 15) {
+        showFinalResults();
+    }
+}
+
+function showFinalResults() {
+    let myScore = 0, oppScore = 0;
+    let tableHtml = `<table><tr><th>№</th><th>Ты</th><th>Друг</th><th>Балл</th></tr>`;
+
+    for (let i = 0; i < 15; i++) {
+        const r1 = results[i], r2 = opponentResults[i];
+        let winner = '';
+
+        // Твои правила сравнения
+        if (r1.ok && (!r2.ok || r1.reactionMs < r2.reactionMs)) {
+            myScore++; winner = '★';
+        } else if (r2.ok && (!r1.ok || r2.reactionMs < r1.reactionMs)) {
+            oppScore++; winner = '☆';
         }
-    }, 1500 + Math.random() * 2000);
-}
 
-document.addEventListener('keydown', e => {
-    if(!canReact || myRoundDone) return;
-    
-    let keyMap = {'KeyA':'A', 'KeyD':'D', 'KeyW':'W'};
-    let pressed = keyMap[e.code];
-    
-    if(pressed) {
-        const time = Math.round(performance.now() - signalTime);
-        const isCorrect = (pressed === target);
-        finishMyRound(isCorrect, time);
+        tableHtml += `<tr>
+            <td>${i+1}</td>
+            <td style="color:${r1.ok?'#4caf50':'#ff5252'}">${r1.ok?r1.reactionMs:'X'}</td>
+            <td style="color:${r2.ok?'#4caf50':'#ff5252'}">${r2.ok?r2.reactionMs:'X'}</td>
+            <td><span class="win-star">${winner}</span></td>
+        </tr>`;
     }
-});
+    tableHtml += `</table>`;
 
-function finishMyRound(isCorrect, time) {
-    myRoundDone = true;
-    myResultData = { ok: isCorrect, time: time };
-    conn.send({type:'RESULT', result: myResultData});
-    $('info').textContent = "Ожидание соперника...";
-    checkRoundEnd();
+    $('duelWinnerText').textContent = myScore > oppScore ? "ТЫ ПОБЕДИЛ! 🏆" : (myScore < oppScore ? "ДРУГ ПОБЕДИЛ! 💀" : "НИЧЬЯ! 🤝");
+    $('duelScoreDetail').textContent = `${myScore} : ${oppScore}`;
+    $('duelTable').innerHTML = tableHtml;
+    $('duelFinish').style.display = 'flex';
 }
 
-function checkRoundEnd() {
-    if(myRoundDone && oppRoundDone) {
-        const dot = $('dot' + attempts);
-        let result = 'draw';
-
-        // Логика из твоего запроса:
-        // 1. Оба правильно -> кто быстрее
-        if(myResultData.ok && oppResultData.ok) {
-            if(myResultData.time < oppResultData.time || target === 'OUT') { myScore++; result='success'; }
-            else if(oppResultData.time < myResultData.time) { oppScore++; result='fail'; }
-            else { myScore++; oppScore++; result='draw'; }
-        } 
-        // 2. Один правильно, другой нет
-        else if(myResultData.ok && !oppResultData.ok) { myScore++; result='success'; }
-        else if(!myResultData.ok && oppResultData.ok) { oppScore++; result='fail'; }
-        // 3. Оба ошиблись
-        else { myScore++; oppScore++; result='draw'; }
-
-        dot.className = 'dot ' + result;
-        $('duelScore').textContent = `ВЫ ${myScore} : ${oppScore} ОПП`;
-        
-        attempts++;
-        setTimeout(startRound, 2000);
+// Проверка ссылки при загрузке
+window.onload = () => {
+    if (new URLSearchParams(window.location.search).has('join')) {
+        initDuel();
     }
-}
-
-function endDuel() {
-    $('resultsOverlay').classList.add('show');
-    if(myScore > oppScore) $('resTitle').textContent = "ПОБЕДА! 🏆";
-    else if(myScore < oppScore) $('resTitle').textContent = "ПРОИГРЫШ 💀";
-    else $('resTitle').textContent = "НИЧЬЯ 🤝";
-    $('resScore').textContent = `${myScore} : ${oppScore}`;
-}
+};
 </script>
 </body>
 </html>
