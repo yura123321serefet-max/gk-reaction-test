@@ -9,281 +9,273 @@
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100vh;overflow:hidden}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#0a0a0f;
+  color:#fff;
+  font-family:'Outfit',sans-serif;
+  height:100vh;
+  overflow:hidden;
+}
+button{
+  padding:14px 32px;
+  font-size:18px;
+  border-radius:10px;
+  border:2px solid #1e1e2e;
+  background:#14141f;
+  color:#fff;
+  cursor:pointer;
+}
+button:hover{border-color:#00e5ff}
 
-/* ===== MENU ===== */
-#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:1000}
-.menu-btn{padding:16px 36px;font-size:18px;font-weight:700;border-radius:12px;border:2px solid #1e1e2e;background:#14141f;color:#fff;cursor:pointer}
-.menu-btn:hover{border-color:#00e5ff}
+#menu,#waiting,#results{
+  position:fixed;inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+}
 
-/* ===== WAITING ROOM ===== */
-#waitingRoom{position:fixed;inset:0;background:#0a0a0f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:1500;text-align:center}
-#duelLink{width:420px;max-width:90vw;padding:12px;border-radius:8px;border:1px solid #333;background:#14141f;color:#00e5ff;text-align:center;font-family:'JetBrains Mono'}
+#waiting{display:none}
+#results{display:none}
 
-/* ===== HUD ===== */
-#hud{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
-.dot{width:14px;height:14px;border-radius:50%;border:2px solid #333}
-.dot.success{background:#00e676;border-color:#00e676}
+canvas{
+  position:fixed;
+  inset:0;
+}
+#hud{
+  position:fixed;
+  top:16px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:6px;
+}
+.dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  border:2px solid #333;
+}
+.dot.ok{background:#00e676;border-color:#00e676}
 .dot.fail{background:#ff3d71;border-color:#ff3d71}
 
-/* ===== INFO ===== */
-#info{position:fixed;bottom:16px;width:100%;text-align:center;font-family:'JetBrains Mono';color:#aaa;z-index:100}
-
-/* ===== MODE 3 CANVAS ===== */
-#mode3Area{position:fixed;inset:0;display:none;z-index:10}
-#mode3Canvas{width:100%;height:100%;display:block}
-
-/* ===== RESULTS ===== */
-#resultsOverlay{position:fixed;inset:0;background:#0a0a0f;display:none;z-index:2000;padding:40px;text-align:center}
-#resultsOverlay.show{display:block}
+#info{
+  position:fixed;
+  bottom:16px;
+  width:100%;
+  text-align:center;
+  font-family:'JetBrains Mono';
+  color:#aaa;
+}
+input{
+  width:420px;
+  max-width:90vw;
+  padding:10px;
+  background:#14141f;
+  border:1px solid #333;
+  color:#00e5ff;
+  text-align:center;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ===== MENU ===== -->
 <div id="menu">
   <h1>GK Reaction Test</h1>
-  <button class="menu-btn" onclick="startGame(MODE_SOLO)">Режим 3 — Соло</button>
-  <button class="menu-btn" onclick="createDuel()">Режим 4 — Дуэль</button>
+  <button onclick="startSolo()">Режим 3 — Соло</button>
+  <button onclick="createDuel()">Режим 4 — Дуэль</button>
 </div>
 
-<!-- ===== WAITING ROOM ===== -->
-<div id="waitingRoom">
+<div id="waiting">
   <h2>Комната ожидания</h2>
-  <p style="color:#aaa">Отправь ссылку другу</p>
-  <input id="duelLink" readonly>
-  <button class="menu-btn" onclick="copyLink()">Скопировать</button>
-  <button class="menu-btn" onclick="cancelDuel()">Отмена</button>
+  <p>Отправь ссылку другу</p>
+  <input id="link" readonly>
+  <button onclick="copy()">Скопировать</button>
 </div>
 
+<div id="results">
+  <h2 id="resText"></h2>
+  <button onclick="location.reload()">В меню</button>
+</div>
+
+<canvas id="canvas"></canvas>
 <div id="hud"></div>
 <div id="info"></div>
 
-<div id="mode3Area">
-  <canvas id="mode3Canvas"></canvas>
-</div>
-
-<div id="resultsOverlay"></div>
-
 <script>
-/* =====================================================
-   CONSTANTS
-===================================================== */
-const MODE_SOLO = 3;
-const MODE_DUEL = 4;
-
-/* =====================================================
-   PEER / DUEL
-===================================================== */
-let peer, conn;
-let duelRounds = [];
-let duelIndex = 0;
-
-/* =====================================================
-   GAME STATE
-===================================================== */
-let mode = MODE_SOLO;
-let attempts = 0;
-let maxAttempts = 15;
-let target = null;
-let signalTime = 0;
-let reactions = [];
-let roundData = [];
-
-/* =====================================================
-   MODE 3 CANVAS
-===================================================== */
-const M3 = {canvas:null,ctx:null,W:0,H:0};
-const stadiumImg = new Image();
-stadiumImg.src = 'stadium_bg.png';
-
-function initMode3Canvas(){
-  M3.canvas = document.getElementById('mode3Canvas');
-  M3.ctx = M3.canvas.getContext('2d');
-  resizeMode3();
-  window.onresize = resizeMode3;
+/* ================== CANVAS ================== */
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+function resize(){
+  canvas.width=innerWidth;
+  canvas.height=innerHeight;
 }
+window.onresize=resize;
+resize();
 
-function resizeMode3(){
-  M3.canvas.width = window.innerWidth;
-  M3.canvas.height = window.innerHeight;
-  M3.W = M3.canvas.width;
-  M3.H = M3.canvas.height;
-  drawScene();
-}
+/* ================== DUEL STATE ================== */
+let peer,conn,isHost=false;
+let rounds=[],roundIndex=0;
+let my=[],enemy=[];
+let waiting=false;
+let signalTime=0;
 
-function drawScene(ball){
-  const ctx=M3.ctx,W=M3.W,H=M3.H;
-  if(stadiumImg.complete){
-    ctx.drawImage(stadiumImg,0,0,W,H);
-  }else{
-    ctx.fillStyle='#0b0f1a';
-    ctx.fillRect(0,0,W,H);
-  }
-  if(ball){
-    ctx.fillStyle='#fff';
-    ctx.beginPath();
-    ctx.arc(ball.x,ball.y,12,0,Math.PI*2);
-    ctx.fill();
-  }
-}
-
-/* =====================================================
-   GAME START
-===================================================== */
-function startGame(m){
-  mode = m;
-  attempts = 0;
-  duelIndex = 0;
-  reactions = [];
-  roundData = [];
-
-  document.getElementById('menu').style.display='none';
-  document.getElementById('waitingRoom').style.display='none';
-  document.getElementById('resultsOverlay').classList.remove('show');
-
-  document.getElementById('mode3Area').style.display='block';
-  initMode3Canvas();
-  buildHud();
-  startRound();
-}
-
-/* =====================================================
-   DUEL FLOW
-===================================================== */
-function createDuel(){
-  peer = new Peer();
-  peer.on('open', id=>{
-    document.getElementById('menu').style.display='none';
-    document.getElementById('waitingRoom').style.display='flex';
-    document.getElementById('duelLink').value =
-      location.origin+location.pathname+'?duel='+id;
-  });
-  peer.on('connection', c=>{
-    conn=c;
-    conn.on('open', ()=>{
-      duelRounds = generateRounds();
-      conn.send({type:'INIT',rounds:duelRounds});
-      startGame(MODE_DUEL);
-    });
-    conn.on('data', onMessage);
-  });
-}
-
-function onMessage(msg){
-  if(msg.type==='INIT'){
-    duelRounds = msg.rounds;
-    startGame(MODE_DUEL);
-  }
-}
-
-function copyLink(){
-  navigator.clipboard.writeText(
-    document.getElementById('duelLink').value
-  );
-}
-
-function cancelDuel(){
-  if(conn) conn.close();
-  if(peer) peer.destroy();
-  document.getElementById('waitingRoom').style.display='none';
-  document.getElementById('menu').style.display='flex';
-}
-
-/* =====================================================
-   ROUNDS
-===================================================== */
-function generateRounds(){
-  const arr=[];
+/* ================== UI ================== */
+const hud=document.getElementById('hud');
+function buildHud(){
+  hud.innerHTML='';
   for(let i=0;i<15;i++){
-    arr.push({
-      target:['A','D','W','OUT'][Math.floor(Math.random()*4)],
-      delay:Math.random()*1500+600
-    });
+    const d=document.createElement('div');
+    d.className='dot';
+    d.id='d'+i;
+    hud.appendChild(d);
   }
-  return arr;
+}
+
+/* ================== DRAW ================== */
+function drawBall(y){
+  ctx.fillStyle='#0a0a0f';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#fff';
+  ctx.beginPath();
+  ctx.arc(canvas.width/2,y,14,0,Math.PI*2);
+  ctx.fill();
+}
+
+/* ================== ROUNDS ================== */
+function genRounds(){
+  return Array.from({length:15},()=>({
+    delay:600+Math.random()*1200,
+    goal:Math.random()<0.7
+  }));
 }
 
 function startRound(){
-  if(attempts>=maxAttempts){
-    showResults();
+  if(roundIndex>=15){
+    finish();
     return;
   }
-  const r = (mode===MODE_DUEL) ? duelRounds[duelIndex] : generateRounds()[0];
-  target = r.target;
-  document.getElementById('info').textContent='Раунд '+(attempts+1);
-
+  document.getElementById('info').textContent='Раунд '+(roundIndex+1);
+  const r=rounds[roundIndex];
   setTimeout(()=>{
-    signalTime = performance.now();
-    animateBall();
-  }, r.delay);
+    signalTime=performance.now();
+    animate(r.goal);
+  },r.delay);
 }
 
-function animateBall(){
-  const start={x:M3.W/2,y:80};
-  const end={x:M3.W/2 + (Math.random()-0.5)*300,y:M3.H*0.7};
-  const t0=performance.now(),dur=700;
-
-  function frame(t){
-    let p=(t-t0)/dur;if(p>1)p=1;
-    const x=start.x+(end.x-start.x)*p;
-    const y=start.y+(end.y-start.y)*p;
-    drawScene({x,y});
-    if(p<1)requestAnimationFrame(frame);
+function animate(goal){
+  let y=0;
+  function frame(){
+    y+=12;
+    drawBall(y);
+    if(y<canvas.height*0.75){
+      requestAnimationFrame(frame);
+    }else{
+      if(goal){
+        waiting=true;
+      }else{
+        endRound(true,null);
+      }
+    }
   }
-  requestAnimationFrame(frame);
+  frame();
 }
 
-/* =====================================================
-   INPUT
-===================================================== */
+/* ================== INPUT ================== */
 document.addEventListener('keydown',e=>{
-  if(!signalTime || e.code!=='Space')return;
+  if(e.code!=='Space'||!waiting)return;
   const rt=Math.round(performance.now()-signalTime);
-  reactions.push(rt);
-  attempts++;
-  duelIndex++;
-  signalTime=0;
-  mark(true);
-  setTimeout(startRound,600);
+  endRound(true,rt);
 });
 
-function buildHud(){
-  let h='';
-  for(let i=0;i<15;i++)h+=`<div class="dot" id="dot${i}"></div>`;
-  document.getElementById('hud').innerHTML=h;
+function endRound(ok,rt){
+  waiting=false;
+  my.push({ok,rt});
+  document.getElementById('d'+roundIndex)
+    .classList.add(ok?'ok':'fail');
+  roundIndex++;
+  setTimeout(startRound,600);
 }
 
-function mark(ok){
-  document.getElementById('dot'+(attempts-1))
-    .className='dot '+(ok?'success':'fail');
+/* ================== FINISH ================== */
+function finish(){
+  if(conn){
+    conn.send({type:'RES',data:my});
+  }
+  if(enemy.length){
+    showResult();
+  }
 }
 
-/* =====================================================
-   RESULTS
-===================================================== */
-function showResults(){
-  const o=document.getElementById('resultsOverlay');
-  o.classList.add('show');
-  const avg=Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length);
-  o.innerHTML=`
-    <h2>Готово</h2>
-    <p>Средняя реакция: ${avg} мс</p>
-    <button class="menu-btn" onclick="location.reload()">В меню</button>
-  `;
+function showResult(){
+  let a=0,b=0;
+  for(let i=0;i<15;i++){
+    if(my[i].ok&&!enemy[i].ok)a++;
+    else if(!my[i].ok&&enemy[i].ok)b++;
+    else if(my[i].ok&&enemy[i].ok){
+      if(my[i].rt<enemy[i].rt)a++;
+      else if(enemy[i].rt<my[i].rt)b++;
+    }
+  }
+  document.getElementById('menu').style.display='none';
+  document.getElementById('results').style.display='flex';
+  document.getElementById('resText').textContent=
+    a>b?'ПОБЕДА '+a+':'+b:'ПОРАЖЕНИЕ '+a+':'+b;
 }
 
-/* =====================================================
-   AUTO JOIN
-===================================================== */
+/* ================== DUEL ================== */
+function createDuel(){
+  isHost=true;
+  peer=new Peer();
+  peer.on('open',id=>{
+    document.getElementById('menu').style.display='none';
+    document.getElementById('waiting').style.display='flex';
+    document.getElementById('link').value=
+      location.origin+location.pathname+'?duel='+id;
+  });
+  peer.on('connection',c=>{
+    conn=c;
+    rounds=genRounds();
+    conn.send({type:'INIT',rounds});
+    startGame();
+  });
+}
+
+function startGame(){
+  document.getElementById('waiting').style.display='none';
+  buildHud();
+  roundIndex=0;
+  my=[];
+  startRound();
+}
+
+function copy(){
+  navigator.clipboard.writeText(
+    document.getElementById('link').value
+  );
+}
+
+function onMsg(m){
+  if(m.type==='INIT'){
+    rounds=m.rounds;
+    startGame();
+  }
+  if(m.type==='RES'){
+    enemy=m.data;
+    showResult();
+  }
+}
+
+/* ================== JOIN ================== */
 const q=new URLSearchParams(location.search);
 if(q.get('duel')){
   peer=new Peer();
   peer.on('open',()=>{
     conn=peer.connect(q.get('duel'));
-    conn.on('data',onMessage);
+    conn.on('data',onMsg);
   });
 }
 </script>
