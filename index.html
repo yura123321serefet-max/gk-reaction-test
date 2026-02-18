@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rematch GK Reaction Test - Duel Edition</title>
@@ -107,6 +108,10 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
     <button class="menu-btn" style="margin-top:20px" id="startMode3">ОК<span>Запустить режим</span></button>
   </div>
 </div>
+  <button class="menu-btn" id="mode4btn">
+  Режим 4 — Дуэль
+  <span>Онлайн · 1v1 · одинаковые раунды</span>
+</button>
 
 <div id="lobbyOverlay">
   <h2 id="lobbyStatus">Создание комнаты...</h2>
@@ -142,6 +147,23 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 </div>
 
 <script>
+  const params = new URLSearchParams(location.search);
+if (params.has('duel')) {
+  joinDuel(params.get('duel'));
+}
+
+  // ===== DUEL MODE =====
+let duelPeer = null;
+let duelConn = null;
+let duelIsHost = false;
+
+let duelRoomId = null;
+let duelRounds = [];     // сценарий 15 раундов
+let duelMyResults = [];  // мои результаты
+let duelEnemyResults = [];
+
+let duelScoreMe = 0;
+let duelScoreEnemy = 0;
 // --- GLOBAL VARIABLES ---
 let mode3Chances = { out: 30, side: 50, center: 20 };
 const $=id=>document.getElementById(id);
@@ -228,6 +250,35 @@ function startDuelGame() {
     startRound();
   }, 1000);
 }
+  $('mode4btn').onclick = () => {
+  duelIsHost = true;
+  $('menu').style.display = 'none';
+  $('duelLobby').style.display = 'flex';
+
+  duelPeer = new Peer();
+
+  duelPeer.on('open', id => {
+    duelRoomId = id;
+    const link = location.origin + location.pathname + '?duel=' + id;
+    $('duelLink').value = link;
+  });
+
+  duelPeer.on('connection', conn => {
+    duelConn = conn;
+    $('duelStatus').textContent = 'Игрок подключился ✔';
+
+    duelConn.on('open', () => {
+      generateDuelRounds();
+      duelConn.send({
+        type: 'INIT_ROUNDS',
+        rounds: duelRounds
+      });
+
+      setTimeout(startDuelGame, 1000);
+    });
+  });
+};
+
 
 // --- GAME CORE ---
 function resetGame(){
@@ -311,6 +362,71 @@ function drawMode3Scene(ballPos, impactDot){
     ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2); ctx.fill();
   }
 }
+  function joinDuel(roomId) {
+  duelIsHost = false;
+  $('menu').style.display = 'none';
+  $('duelLobby').style.display = 'flex';
+  $('duelStatus').textContent = 'Подключение к комнате…';
+
+  duelPeer = new Peer();
+
+  duelPeer.on('open', id => {
+    duelConn = duelPeer.connect(roomId);
+
+    duelConn.on('open', () => {
+      $('duelStatus').textContent = 'Подключено ✔';
+    });
+
+    duelConn.on('data', data => {
+      if (data.type === 'INIT_ROUNDS') {
+        duelRounds = data.rounds;
+        startDuelGame();
+      }
+    });
+  });
+}
+function generateDuelRounds() {
+  duelRounds = [];
+  for (let i = 0; i < 15; i++) {
+    const t = getRandomMode3Target();
+    duelRounds.push({
+      target: t
+    });
+  }
+}
+function startDuelGame() {
+  $('duelLobby').style.display = 'none';
+  mode = 4;
+  attempts = 0;
+  maxAttempts = 15;
+  duelMyResults = [];
+  duelEnemyResults = [];
+  duelScoreMe = 0;
+  duelScoreEnemy = 0;
+
+  $('gameArea').style.display = 'none';
+  $('mode3Area').style.display = 'block';
+  initMode3Canvas();
+
+  startDuelRound();
+}
+function startDuelRound() {
+  if (attempts >= 15) {
+    duelConn.send({
+      type: 'MY_RESULTS',
+      results: duelMyResults
+    });
+    return;
+  }
+
+  const round = duelRounds[attempts];
+  target = round.target;
+
+  // дальше используешь ТВОЙ mode 3,
+  // ТОЛЬКО без getRandomMode3Target()
+  // target уже известен
+}
+
 
 function getRandomMode3Target(){
   const r=Math.random()*100, {out, side}=mode3Chances;
@@ -416,6 +532,10 @@ function evaluateMode3(){
     else {ok=true; if(reaction)reactions.push(reaction); result=`${reaction} мс`}
   }
   updateHudAndData(ok, result, reaction);
+  duelMyResults.push({
+  ok,
+  reaction: reaction ?? null
+});
 }
 
 function evaluate(){
@@ -461,6 +581,40 @@ function showResults(){
   html+=`<div class="btn-row"><button class="restart-btn" onclick="restartSameMode()">Снова</button><button class="back-btn" onclick="backToMenu()">В меню</button></div>`;
   $('resultsContent').innerHTML=html;
 }
+  duelConn.on('data', data => {
+  if (data.type === 'MY_RESULTS') {
+    duelEnemyResults = data.results;
+    calculateDuelScore();
+  }
+});
+function calculateDuelScore() {
+  for (let i = 0; i < 15; i++) {
+    const a = duelMyResults[i];
+    const b = duelEnemyResults[i];
+
+    if (a.ok && !b.ok) duelScoreMe++;
+    else if (!a.ok && b.ok) duelScoreEnemy++;
+    else if (a.ok && b.ok && a.reaction !== b.reaction) {
+      if (a.reaction < b.reaction) duelScoreMe++;
+      else duelScoreEnemy++;
+    }
+  }
+
+  showDuelResults();
+}
+function showDuelResults() {
+  $('resultsOverlay').classList.add('show');
+  $('resultsContent').innerHTML = `
+    <div class="res-title">Дуэль окончена</div>
+    <div class="res-avg">
+      Ты: ${duelScoreMe} · Противник: ${duelScoreEnemy}
+    </div>
+    <div class="btn-row">
+      <button class="back-btn" onclick="backToMenu()">В меню</button>
+    </div>
+  `;
+}
+
 
 window.restartSameMode=()=>startGame(mode);
 window.backToMenu=()=>{resetGame(); $('mode3Area').style.display='none'; $('gameArea').style.display='flex'; $('menu').style.display='flex';};
@@ -477,5 +631,22 @@ function updatePercents(){
 $('startMode3').onclick=()=>{ $('mode3Settings').style.display='none'; startGame(3); };
 updatePercents();
 </script>
+  <div id="duelLobby" style="
+position:fixed;inset:0;z-index:3000;
+background:rgba(10,10,15,.97);
+display:none;flex-direction:column;
+align-items:center;justify-content:center;
+gap:20px;text-align:center;
+">
+  <h2 style="font-size:32px">Дуэль · Комната ожидания</h2>
+  <p>Скопируй ссылку и отправь другу</p>
+  <input id="duelLink" readonly style="
+    width:320px;padding:12px;
+    background:#111;border:1px solid #333;
+    color:#0ff;text-align:center;
+  ">
+  <div id="duelStatus" style="color:#888">Ожидание игрока…</div>
+</div>
+
 </body>
 </html>
