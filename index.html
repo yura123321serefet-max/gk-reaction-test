@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rematch GK Reaction Test - Duel Edition</title>
+<title>Rematch GK Reaction Test</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
@@ -15,7 +13,7 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
   --border:#1e1e2e;--success:#00e676;--fail:#ff3d71;--warn:#ffab00;
 }
 
-#menu{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:1000}
+#menu{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:1000}
 #menu h1{font-size:42px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 #menu p{color:#888;font-size:14px;max-width:420px;text-align:center;line-height:1.6}
 .menu-btn{
@@ -69,6 +67,11 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 .tl-marker.space-mk{background:var(--warn);box-shadow:0 0 6px var(--warn)}
 .tl-prezone{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.03);z-index:1;border-right:1px dashed rgba(255,255,255,.12)}
 
+.tl-legend{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap}
+.tl-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#888;font-family:'JetBrains Mono',monospace}
+.tl-legend-item .sw{width:14px;height:6px;border-radius:2px;flex-shrink:0}
+.tl-legend-item .sw.circle{width:7px;height:7px;border-radius:50%}
+
 .btn-row{display:flex;flex-direction:column;align-items:center;margin-top:32px;gap:10px;padding-bottom:40px}
 .restart-btn{
   padding:16px 48px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700;
@@ -83,51 +86,71 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 }
 .back-btn:hover{border-color:#888;color:#fff}
 
+/* ===== MODE 3 ===== */
 #mode3Area{position:fixed;inset:0;display:none;overflow:hidden;z-index:40}
 #mode3Canvas{width:100%;height:100%;display:block}
-.sliderRow{margin-bottom:16px;}
-.sliderRow label{display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;color:#aaa;}
-.sliderRow input{width:100%;}
-
-/* Лобби для Дуэли */
-#lobbyOverlay{position:fixed;inset:0;z-index:1600;background:rgba(10,10,15,.98);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
-#lobbyOverlay h2{font-size:32px;margin-bottom:20px;color:#fff}
-#shareUrl{background:var(--card);border:1px solid var(--border);color:var(--accent);padding:12px;width:350px;border-radius:8px;text-align:center;font-family:monospace;margin-bottom:20px;outline:none}
+.sliderRow{
+  margin-bottom:16px;
+}
+.sliderRow label{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:6px;
+  font-size:14px;
+  color:#aaa;
+}
+.sliderRow input{
+  width:100%;
+}
 
 </style>
+
 </head>
+<div id="mode3Settings" style="
+position:fixed;inset:0;z-index:1500;
+background:rgba(10,10,15,.97);
+display:none;align-items:center;justify-content:center;
+">
+  <div style="
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:32px;
+  width:420px;
+  max-width:90vw;
+  ">
+    <h2 style="font-size:28px;margin-bottom:16px">Настройка ударов</h2>
+
+    <div class="sliderRow">
+      <label>Мимо ворот: <b><span id="pOut">30</span>%</b></label>
+      <input type="range" min="0" max="100" value="30" id="outRange">
+    </div>
+
+    <div class="sliderRow">
+      <label>В створ (углы): <b><span id="pSide">50</span>%</b></label>
+      <input type="range" min="0" max="100" value="50" id="sideRange">
+    </div>
+
+    <div class="sliderRow">
+      <label>По центру: <b><span id="pCenter">20</span>%</b></label>
+      <input type="range" min="0" max="100" value="20" id="centerRange">
+    </div>
+
+    <button class="menu-btn" style="margin-top:20px" id="startMode3">
+      ОК
+      <span>Запустить режим</span>
+    </button>
+  </div>
+</div>
 
 <body>
 
-<div id="mode3Settings" style="position:fixed;inset:0;z-index:1500;background:rgba(10,10,15,.97);display:none;align-items:center;justify-content:center;">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:420px;max-width:90vw;">
-    <h2 style="font-size:28px;margin-bottom:16px">Настройка ударов</h2>
-    <div class="sliderRow"><label>Мимо ворот: <b><span id="pOut">30</span>%</b></label><input type="range" min="0" max="100" value="30" id="outRange"></div>
-    <div class="sliderRow"><label>В створ (углы): <b><span id="pSide">50</span>%</b></label><input type="range" min="0" max="100" value="50" id="sideRange"></div>
-    <div class="sliderRow"><label>По центру: <b><span id="pCenter">20</span>%</b></label><input type="range" min="0" max="100" value="20" id="centerRange"></div>
-    <button class="menu-btn" style="margin-top:20px" id="startMode3">ОК<span>Запустить режим</span></button>
-  </div>
-</div>
-  <button class="menu-btn" id="mode4btn">
-  Режим 4 — Дуэль
-  <span>Онлайн · 1v1 · одинаковые раунды</span>
-</button>
-
-<div id="lobbyOverlay">
-  <h2 id="lobbyStatus">Создание комнаты...</h2>
-  <p style="color:#888;margin-bottom:10px;">Отправь эту ссылку другу:</p>
-  <input type="text" id="shareUrl" readonly>
-  <p id="lobbyWaitText" style="color:var(--warn);font-size:14px;margin-bottom:20px;">Ожидаем подключения второго игрока...</p>
-  <button class="back-btn" onclick="location.href=window.location.pathname">Отмена</button>
-</div>
-
 <div id="menu">
   <h1>GK Reaction Test</h1>
-  <p>Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. В 3D режиме доступна кнопка <b>W</b> (центр).</p>
+  <p>Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. Направление должно быть нажато до или одновременно с прыжком. На таймлайне видны все нажатия — включая до сигнала.</p>
   <button class="menu-btn" id="mode1">Режим 1 — Сигнал<span>Сторона подсвечивается</span></button>
   <button class="menu-btn" id="mode2">Режим 2 — Мяч<span>Мяч летит в угол</span></button>
-  <button class="menu-btn" id="mode3btn">Режим 3 — Ворота 3D<span>Мяч летит на тебя · 15 раундов</span></button>
-  <button class="menu-btn" id="modeDuel" style="border-color:var(--purple)">Режим 4 — Дуэль<span>Игра против друга по сети (15 раундов)</span></button>
+  <button class="menu-btn" id="mode3btn">Режим 3 — Ворота 3D<span>Мяч летит на тебя · 15 раундов · A/D/W+Space или не прыгай</span></button>
 </div>
 
 <div id="hud"></div>
@@ -147,142 +170,34 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 </div>
 
 <script>
-  const params = new URLSearchParams(location.search);
-if (params.has('duel')) {
-  joinDuel(params.get('duel'));
-}
-
-  // ===== DUEL MODE =====
-let duelPeer = null;
-let duelConn = null;
-let duelIsHost = false;
-
-let duelRoomId = null;
-let duelRounds = [];     // сценарий 15 раундов
-let duelMyResults = [];  // мои результаты
-let duelEnemyResults = [];
-
-let duelScoreMe = 0;
-let duelScoreEnemy = 0;
-// --- GLOBAL VARIABLES ---
-let mode3Chances = { out: 30, side: 50, center: 20 };
-const $=id=>document.getElementById(id);
-let mode=1, attempts=0, maxAttempts=5;
-let target=null, signalTime=0, roundStartTime=0;
-let waiting=false, recording=false;
-let firstDir=null, firstDirTime=null, spaceTime=null;
-let allKeyDowns={}, allKeySegments=[], allSpacePresses=[];
-let roundData=[], reactions=[];
-const tolerance=20;
-let roundNeedsSpace=false;
-
-// --- MULTIPLAYER (PEERJS) VARIABLES ---
-let peer = null, conn = null, isHost = false;
-let opponentResults = null, duelSequence = [];
-let myDuelScore = 0, opponentDuelScore = 0;
-
-// --- INITIALIZATION ---
-window.addEventListener('load', () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('room');
-  if (roomId) joinRoom(roomId);
-});
-
-$('modeDuel').onclick = createRoom;
-
-function createRoom() {
-  isHost = true;
-  peer = new Peer();
-  $('lobbyOverlay').style.display = 'flex';
-  peer.on('open', (id) => {
-    const url = window.location.origin + window.location.pathname + '?room=' + id;
-    $('shareUrl').value = url;
-    $('lobbyStatus').textContent = 'Лобби создано';
-  });
-  peer.on('connection', (connection) => {
-    conn = connection;
-    setupConn();
-  });
-}
-
-function joinRoom(id) {
-  isHost = false;
-  peer = new Peer();
-  $('lobbyOverlay').style.display = 'flex';
-  $('lobbyStatus').textContent = 'Подключение...';
-  peer.on('open', () => {
-    conn = peer.connect(id);
-    setupConn();
-  });
-}
-
-function setupConn() {
-  conn.on('open', () => {
-    $('lobbyStatus').textContent = 'Соединение установлено!';
-    if (isHost) {
-      duelSequence = Array.from({length: 15}, getRandomMode3Target);
-      conn.send({ type: 'START_GAME', sequence: duelSequence });
-      startDuelGame();
-    }
-  });
-  conn.on('data', (data) => {
-    if (data.type === 'START_GAME') {
-      duelSequence = data.sequence;
-      startDuelGame();
-    }
-    if (data.type === 'GAME_OVER') {
-      opponentResults = data.results;
-      checkDuelEnd();
-    }
-  });
-}
-
-function startDuelGame() {
-  setTimeout(() => {
-    $('lobbyOverlay').style.display = 'none';
-    mode = 4;
-    maxAttempts = 15;
-    $('menu').style.display = 'none';
-    $('gameArea').style.display = 'none';
-    $('mode3Area').style.display = 'block';
-    initMode3Canvas();
-    resetGame();
-    startRound();
-  }, 1000);
-}
-  $('mode4btn').onclick = () => {
-  duelIsHost = true;
-  $('menu').style.display = 'none';
-  $('duelLobby').style.display = 'flex';
-
-  duelPeer = new Peer();
-
-  duelPeer.on('open', id => {
-    duelRoomId = id;
-    const link = location.origin + location.pathname + '?duel=' + id;
-    $('duelLink').value = link;
-  });
-
-  duelPeer.on('connection', conn => {
-    duelConn = conn;
-    $('duelStatus').textContent = 'Игрок подключился ✔';
-
-    duelConn.on('open', () => {
-      generateDuelRounds();
-      duelConn.send({
-        type: 'INIT_ROUNDS',
-        rounds: duelRounds
-      });
-
-      setTimeout(startDuelGame, 1000);
-    });
-  });
+let mode3Chances = {
+  out: 30,
+  side: 50,
+  center: 20
 };
 
+const $=id=>document.getElementById(id);
+let mode=1,attempts=0,maxAttempts=5;
+let target=null,signalTime=0;
+let waiting=false,recording=false;
 
-// --- GAME CORE ---
+let roundStartTime=0;
+let firstDir=null,firstDirTime=null;
+let spaceTime=null;
+
+let allKeyDowns={};
+let allKeySegments=[];
+let allSpacePresses=[];
+
+let roundData=[];
+let reactions=[];
+const tolerance=20;
+
+// Explicit per-round flag: does this round's ball go into goal?
+let roundNeedsSpace=false;
+
 function resetGame(){
-  attempts=0;roundData=[];reactions=[]; opponentResults = null;
+  attempts=0;roundData=[];reactions=[];
   $('hud').innerHTML='';$('info').textContent='';
   $('resultsOverlay').classList.remove('show');
   $('left').classList.remove('active');$('right').classList.remove('active');
@@ -298,9 +213,9 @@ function buildHud(){
 
 function startGame(m){
   mode=m;
-  maxAttempts = (mode>=3) ? 15 : 5;
+  maxAttempts = (mode===3) ? 15 : 5;
   $('menu').style.display='none';
-  if(mode>=3){
+  if(mode===3){
     $('gameArea').style.display='none';
     $('mode3Area').style.display='block';
     initMode3Canvas();
@@ -319,334 +234,838 @@ $('mode3btn').onclick=()=>{
   $('mode3Settings').style.display='flex';
 };
 
-// --- MODE 3 & DUEL DRAWING ---
-const stadiumImg = new Image();
-stadiumImg.src = 'stadium_bg.PNG';
+// ===================== MODE 3 — 3D CANVAS =====================
+// Camera is ABOVE the crossbar, looking DOWN onto the pitch.
+// So the top of the screen = closer to camera (wider), bottom = further away (narrower, the goal line on the ground).
+// The crossbar is at the TOP (wide), the ground line at the BOTTOM (narrow).
+// Think: you're standing behind the goal, looking over the crossbar down at the pitch.
+// The ball comes FROM the pitch (bottom/center) and flies TOWARDS the goal (upward on screen).
+
 const M3={canvas:null,ctx:null,W:0,H:0};
+// === MODE 3 BACKGROUND IMAGE ===
+const stadiumImg = new Image();
+stadiumImg.src = 'stadium_bg.png';
 
 function initMode3Canvas(){
   M3.canvas=$('mode3Canvas');
   M3.ctx=M3.canvas.getContext('2d');
   resizeMode3();
+  window.removeEventListener('resize',resizeMode3);
   window.addEventListener('resize',resizeMode3);
 }
 
 function resizeMode3(){
-  M3.W=M3.canvas.width=window.innerWidth;
-  M3.H=M3.canvas.height=window.innerHeight;
+  const c=M3.canvas;
+  c.width=window.innerWidth;
+  c.height=window.innerHeight;
+  M3.W=c.width;M3.H=c.height;
   drawMode3Scene();
 }
 
 function getGoalGeometry(){
-  const W=M3.W,H=M3.H,cx=W/2;
-  const horizonY=H*0.18, crossbarY=H*0.28, crossbarHalf=W*0.45;
-  const postBaseY=H*0.84, goalHeight=postBaseY-crossbarY;
+  const W=M3.W,H=M3.H;
+  const cx=W/2;
+
+  // Goal tilted ~160° the other way from previous:
+  // Crossbar is FAR = high on screen, narrow (near the pitch)
+  // Post bases are CLOSE = low on screen, wide (near us)
+  // Heavily tilted back — almost looking down on it
+
+  const horizonY=H*0.18;
+
+  // Crossbar — raised up for 50% taller goal
+  const crossbarY=H*0.28;
+  const crossbarHalf=W*0.450;
+
+  // Post bases — slightly NARROWER than crossbar (5° outward tilt = posts lean outward from goal center)
+  const postBaseY=H*0.84;
+  const goalHeight=postBaseY-crossbarY;
   const postBaseHalf=crossbarHalf - Math.tan(5*Math.PI/180)*goalHeight;
-  return {cx, tl:{x:cx-crossbarHalf, y:crossbarY}, tr:{x:cx+crossbarHalf, y:crossbarY}, 
-          bl:{x:cx-postBaseHalf, y:postBaseY}, br:{x:cx+postBaseHalf, y:postBaseY}, 
-          crossbarY, postBaseY, horizonY};
+
+  // 3D DEPTH — back of the net lies on the ground behind goal
+  // The back corners should be DIRECTLY BEHIND the front posts (same X or slightly wider),
+  // but further DOWN the screen (behind us on the ground).
+  // This makes the side nets go straight back, not sideways.
+  const depthY=H*0.18;
+
+  // Back-top corners (behind crossbar ends — wider spread)
+  const backTL={x:cx-crossbarHalf-W*0.09, y:crossbarY+depthY};
+  const backTR={x:cx+crossbarHalf+W*0.09, y:crossbarY+depthY};
+  // Back-bottom corners (behind post bases — wider spread)  
+  const backBL={x:cx-postBaseHalf-W*0.10, y:postBaseY+depthY};
+  const backBR={x:cx+postBaseHalf+W*0.10, y:postBaseY+depthY};
+
+  // depthX kept for compatibility
+  const depthX=W*0.04;
+
+  return {cx,
+    // Front frame: tl/tr = crossbar ends (far, up, narrow), bl/br = post bases (close, down, wide)
+    tl:{x:cx-crossbarHalf, y:crossbarY},
+    tr:{x:cx+crossbarHalf, y:crossbarY},
+    bl:{x:cx-postBaseHalf, y:postBaseY},
+    br:{x:cx+postBaseHalf, y:postBaseY},
+    backTL, backTR, backBL, backBR,
+    crossbarY, postBaseY, crossbarHalf, postBaseHalf,
+    goalLineY: postBaseY,
+    horizonY, depthX, depthY
+  };
 }
+function showIdleBall(){
+  const g = getGoalGeometry();
 
-function drawMode3Scene(ballPos, impactDot){
-  const ctx=M3.ctx, W=M3.W, H=M3.H, g=getGoalGeometry();
-  if (stadiumImg.complete) {
-    const scale = Math.max(W/stadiumImg.width, H/stadiumImg.height);
-    ctx.drawImage(stadiumImg, (W-stadiumImg.width*scale)/2, (H-stadiumImg.height*scale)/2, stadiumImg.width*scale, stadiumImg.height*scale);
-  } else { ctx.fillStyle='#0a0a0f'; ctx.fillRect(0,0,W,H); }
+  idleBall = {
+    x: g.cx,
+    y: g.horizonY + 20,
+    size: 6
+  };
 
-  if(impactDot){
-    ctx.fillStyle='rgba(0,229,255,0.5)'; ctx.beginPath(); ctx.arc(impactDot.x,impactDot.y,15,0,Math.PI*2); ctx.fill();
+  drawMode3Scene(idleBall); 
+}
+function drawMode3Scene(ballPos,impactDot){
+  const ctx=M3.ctx,W=M3.W,H=M3.H;
+  const g=getGoalGeometry();
+ //=== BACKGROUND IMAGE (STADIUM: SKY + PITCH) ===
+if (stadiumImg.complete) {
+  const imgW = stadiumImg.width;
+  const imgH = stadiumImg.height;
+
+  const scale = Math.max(W / imgW, H / imgH);
+  const drawW = imgW * scale;
+  const drawH = imgH * scale;
+
+  const x = (W - drawW) / 2;
+  const y = (H - drawH) / 2;
+
+  ctx.drawImage(stadiumImg, x, y, drawW, drawH);
+} else {
+  ctx.fillStyle = '#0b0f1a';
+  ctx.fillRect(0, 0, W, H);
+}  
+
+/*
+  // === NET INSIDE GOAL OPENING ===
+  // Dark area behind the goal (the ground under the net)
+  ctx.fillStyle='rgba(5,5,12,0.35)';
+  ctx.beginPath();
+  ctx.moveTo(g.bl.x,g.bl.y);ctx.lineTo(g.br.x,g.br.y);
+  ctx.lineTo(g.backBR.x,g.backBR.y);ctx.lineTo(g.backBL.x,g.backBL.y);
+  ctx.closePath();ctx.fill();
+
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.tr.x,g.tr.y);
+  ctx.lineTo(g.br.x,g.br.y);ctx.lineTo(g.bl.x,g.bl.y);
+  ctx.closePath();ctx.clip();
+
+  // Dark net background
+  const netBg=ctx.createLinearGradient(0,g.crossbarY,0,g.postBaseY);
+  netBg.addColorStop(0,'#080810');netBg.addColorStop(1,'#050508');
+  ctx.fillStyle=netBg;
+  ctx.fillRect(0,g.crossbarY,W,g.postBaseY-g.crossbarY);
+
+  // Net mesh lines
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  const nv=20;
+  for(let i=0;i<=nv;i++){
+    const t=i/nv;
+    const tx=g.tl.x+(g.tr.x-g.tl.x)*t;
+    const bx=g.bl.x+(g.br.x-g.bl.x)*t;
+    ctx.beginPath();ctx.moveTo(tx,g.crossbarY);ctx.lineTo(bx,g.postBaseY);ctx.stroke();
   }
+  const nh=8;
+  for(let i=0;i<=nh;i++){
+    const t=i/nh;
+    const lx=g.tl.x+(g.bl.x-g.tl.x)*t;
+    const rx=g.tr.x+(g.br.x-g.tr.x)*t;
+    const y=g.crossbarY+(g.postBaseY-g.crossbarY)*t;
+    ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
+  }
+  ctx.restore();
+*/
+
+  // === 3D GOAL STRUCTURE ===
+  const pw=Math.max(6,W*0.007);
+  ctx.lineCap='round';ctx.lineJoin='round';
+/*
+
+  // --- SIDE NETS (between front posts and back posts) ---
+  // Left side net
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.backTL.x,g.backTL.y);
+  ctx.lineTo(g.backBL.x,g.backBL.y);ctx.lineTo(g.bl.x,g.bl.y);
+  ctx.closePath();ctx.clip();
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.fill();
+  // Side net mesh
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  for(let i=0;i<=8;i++){
+    const t=i/8;
+    const fx=g.tl.x+(g.bl.x-g.tl.x)*t;
+    const fy=g.tl.y+(g.bl.y-g.tl.y)*t;
+    const bx=g.backTL.x+(g.backBL.x-g.backTL.x)*t;
+    const by=g.backTL.y+(g.backBL.y-g.backTL.y)*t;
+    ctx.beginPath();ctx.moveTo(fx,fy);ctx.lineTo(bx,by);ctx.stroke();
+  }
+  for(let i=0;i<=6;i++){
+    const t=i/6;
+    const lx=g.tl.x+(g.backTL.x-g.tl.x)*t;
+    const ly=g.tl.y+(g.backTL.y-g.tl.y)*t;
+    const lx2=g.bl.x+(g.backBL.x-g.bl.x)*t;
+    const ly2=g.bl.y+(g.backBL.y-g.bl.y)*t;
+    ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx2,ly2);ctx.stroke();
+  }
+  ctx.restore();
+*/
+/*
+
+  // Right side net
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(g.tr.x,g.tr.y);ctx.lineTo(g.backTR.x,g.backTR.y);
+  ctx.lineTo(g.backBR.x,g.backBR.y);ctx.lineTo(g.br.x,g.br.y);
+  ctx.closePath();ctx.clip();
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  for(let i=0;i<=8;i++){
+    const t=i/8;
+    const fx=g.tr.x+(g.br.x-g.tr.x)*t;
+    const fy=g.tr.y+(g.br.y-g.tr.y)*t;
+    const bx=g.backTR.x+(g.backBR.x-g.backTR.x)*t;
+    const by=g.backTR.y+(g.backBR.y-g.backTR.y)*t;
+    ctx.beginPath();ctx.moveTo(fx,fy);ctx.lineTo(bx,by);ctx.stroke();
+  }
+  for(let i=0;i<=6;i++){
+    const t=i/6;
+    const rx=g.tr.x+(g.backTR.x-g.tr.x)*t;
+    const ry=g.tr.y+(g.backTR.y-g.tr.y)*t;
+    const rx2=g.br.x+(g.backBR.x-g.br.x)*t;
+    const ry2=g.br.y+(g.backBR.y-g.br.y)*t;
+    ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx2,ry2);ctx.stroke();
+  }
+  ctx.restore();
+*/
+/*
+
+  // --- TOP NET (between crossbar and back top bar) ---
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.tr.x,g.tr.y);
+  ctx.lineTo(g.backTR.x,g.backTR.y);ctx.lineTo(g.backTL.x,g.backTL.y);
+  ctx.closePath();ctx.clip();
+  ctx.fillStyle='rgba(0,0,0,0.1)';
+  ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  for(let i=0;i<=16;i++){
+    const t=i/16;
+    const fx=g.tl.x+(g.tr.x-g.tl.x)*t;
+    const bx=g.backTL.x+(g.backTR.x-g.backTL.x)*t;
+    ctx.beginPath();ctx.moveTo(fx,g.tl.y);ctx.lineTo(bx,g.backTL.y);ctx.stroke();
+  }
+  for(let i=0;i<=4;i++){
+    const t=i/4;
+    const lx=g.tl.x+(g.backTL.x-g.tl.x)*t;
+    const rx=g.tr.x+(g.backTR.x-g.tr.x)*t;
+    const y=g.tl.y+(g.backTL.y-g.tl.y)*t;
+    ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
+  }
+  ctx.restore();
+*/
+/*
+
+  // --- BACK DEPTH BARS (metal frame going backward) ---
+  // These are drawn as lighter/thinner bars — they're further away
+  const dpw=Math.max(4,pw*0.6);
+  ctx.strokeStyle='rgba(200,200,210,0.6)';ctx.lineWidth=dpw;
+  // Top-left depth bar (crossbar end → back)
+  ctx.beginPath();ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.backTL.x,g.backTL.y);ctx.stroke();
+  // Top-right depth bar
+  ctx.beginPath();ctx.moveTo(g.tr.x,g.tr.y);ctx.lineTo(g.backTR.x,g.backTR.y);ctx.stroke();
+  // Back top bar (connecting back corners)
+  ctx.strokeStyle='rgba(200,200,210,0.4)';ctx.lineWidth=dpw*0.8;
+  ctx.beginPath();ctx.moveTo(g.backTL.x,g.backTL.y);ctx.lineTo(g.backTR.x,g.backTR.y);ctx.stroke();
+  // Bottom-left depth bar (post → back)
+  ctx.strokeStyle='rgba(200,200,210,0.35)';ctx.lineWidth=dpw*0.7;
+  ctx.beginPath();ctx.moveTo(g.bl.x,g.bl.y);ctx.lineTo(g.backBL.x,g.backBL.y);ctx.stroke();
+  // Bottom-right depth bar
+  ctx.beginPath();ctx.moveTo(g.br.x,g.br.y);ctx.lineTo(g.backBR.x,g.backBR.y);ctx.stroke();
+*/
+/*
+  // --- FRONT FRAME (main posts + crossbar, drawn on top) ---
+  // Glow
+  ctx.save();
+  ctx.shadowColor='rgba(255,255,255,0.3)';ctx.shadowBlur=16;
+  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=pw+10;
+  ctx.beginPath();
+  ctx.moveTo(g.bl.x,g.bl.y);ctx.lineTo(g.tl.x,g.tl.y);
+  ctx.lineTo(g.tr.x,g.tr.y);ctx.lineTo(g.br.x,g.br.y);
+  ctx.stroke();
+  ctx.restore();
+*/
+/*
+  // Solid white front frame
+  ctx.strokeStyle='#e8e8e8';ctx.lineWidth=pw;
+  ctx.beginPath();ctx.moveTo(g.bl.x,g.bl.y);ctx.lineTo(g.tl.x,g.tl.y);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(g.br.x,g.br.y);ctx.lineTo(g.tr.x,g.tr.y);ctx.stroke();
+  ctx.lineWidth=pw+2;
+  ctx.beginPath();ctx.moveTo(g.tl.x,g.tl.y);ctx.lineTo(g.tr.x,g.tr.y);ctx.stroke();
+*/
+  // === IMPACT DOT (bright cyan, very visible) ===
+  if(impactDot){
+    ctx.save();
+    ctx.shadowColor='rgba(0,229,255,1)';ctx.shadowBlur=50;
+    ctx.fillStyle='rgba(0,229,255,0.4)';
+    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,32,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.shadowColor='rgba(0,229,255,0.9)';ctx.shadowBlur=30;
+    ctx.fillStyle='rgba(0,229,255,0.85)';
+    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,16,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+
+    ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,7,0,Math.PI*2);ctx.fill();
+
+    ctx.strokeStyle='rgba(0,229,255,0.7)';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,26,0,Math.PI*2);ctx.stroke();
+
+    ctx.strokeStyle='rgba(0,229,255,0.3)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,38,0,Math.PI*2);ctx.stroke();
+
+    ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(impactDot.x-20,impactDot.y);ctx.lineTo(impactDot.x+20,impactDot.y);
+    ctx.moveTo(impactDot.x,impactDot.y-20);ctx.lineTo(impactDot.x,impactDot.y+20);
+    ctx.stroke();
+  }
+
+  // === BALL ===
   if(ballPos){
     const sz=ballPos.size||14;
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,0.15)';
+    ctx.beginPath();ctx.ellipse(ballPos.x,ballPos.y+sz*0.4,sz*0.7,sz*0.2,0,0,Math.PI*2);ctx.fill();
+    const bg=ctx.createRadialGradient(ballPos.x-sz*0.25,ballPos.y-sz*0.25,sz*0.1,ballPos.x,ballPos.y,sz);
+    bg.addColorStop(0,'#fff');bg.addColorStop(0.6,'#e8e8e8');bg.addColorStop(1,'#aaa');
+    ctx.fillStyle=bg;
+    ctx.beginPath();ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2);ctx.fill();
+    ctx.save();
+    ctx.shadowColor='rgba(255,255,255,0.4)';ctx.shadowBlur=18;
+    ctx.fillStyle='rgba(255,255,255,0.02)';
+    ctx.beginPath();ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle='rgba(0,0,0,0.1)';ctx.lineWidth=0.8;
+    const ps=sz*0.32;
+    ctx.beginPath();
+    for(let i=0;i<5;i++){
+      const a=(i/5)*Math.PI*2-Math.PI/2;
+      const px=ballPos.x+Math.cos(a)*ps;
+      const py=ballPos.y+Math.sin(a)*ps;
+      if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+    }
+    ctx.closePath();ctx.stroke();
   }
 }
-  function joinDuel(roomId) {
-  duelIsHost = false;
-  $('menu').style.display = 'none';
-  $('duelLobby').style.display = 'flex';
-  $('duelStatus').textContent = 'Подключение к комнате…';
 
-  duelPeer = new Peer();
+// Ball targets — crossbar at top (far/narrow), post bases at bottom (close/wide)
+function getBallTargets(){
+  const g=getGoalGeometry();
+  const cx=g.cx;
 
-  duelPeer.on('open', id => {
-    duelConn = duelPeer.connect(roomId);
+  // INSIDE GOAL (between crossbar top and post bases bottom):
+  const goalH=g.postBaseY-g.crossbarY;
+  const leftCorner={
+    x: g.bl.x + (g.br.x-g.bl.x)*0.08,
+    y: g.crossbarY + goalH*0.55
+  };
+  const rightCorner={
+    x: g.br.x - (g.br.x-g.bl.x)*0.08,
+    y: g.crossbarY + goalH*0.55
+  };
+  const center={
+    x: cx,
+    y: g.crossbarY + goalH*0.45
+  };
 
-    duelConn.on('open', () => {
-      $('duelStatus').textContent = 'Подключено ✔';
-    });
+  // OUTSIDE GOAL:
+  // Over crossbar (above goal on the pitch)
+  const overTop={
+    x: cx + (Math.random()-0.5)*70,
+    y: g.crossbarY - 25 - Math.random()*30
+  };
+  // Left of left post
+  const outLeft={
+    x: g.bl.x - 35 - Math.random()*50,
+    y: g.crossbarY + goalH*(0.2+Math.random()*0.4)
+  };
+  // Right of right post
+  const outRight={
+    x: g.br.x + 35 + Math.random()*50,
+    y: g.crossbarY + goalH*(0.2+Math.random()*0.4)
+  };
 
-    duelConn.on('data', data => {
-      if (data.type === 'INIT_ROUNDS') {
-        duelRounds = data.rounds;
-        startDuelGame();
-      }
-    });
-  });
+  return {leftCorner,rightCorner,center,overTop,outLeft,outRight};
 }
-function generateDuelRounds() {
-  duelRounds = [];
-  for (let i = 0; i < 15; i++) {
-    const t = getRandomMode3Target();
-    duelRounds.push({
-      target: t
-    });
-  }
-}
-function startDuelGame() {
-  $('duelLobby').style.display = 'none';
-  mode = 4;
-  attempts = 0;
-  maxAttempts = 15;
-  duelMyResults = [];
-  duelEnemyResults = [];
-  duelScoreMe = 0;
-  duelScoreEnemy = 0;
-
-  $('gameArea').style.display = 'none';
-  $('mode3Area').style.display = 'block';
-  initMode3Canvas();
-
-  startDuelRound();
-}
-function startDuelRound() {
-  if (attempts >= 15) {
-    duelConn.send({
-      type: 'MY_RESULTS',
-      results: duelMyResults
-    });
-    return;
-  }
-
-  const round = duelRounds[attempts];
-  target = round.target;
-
-  // дальше используешь ТВОЙ mode 3,
-  // ТОЛЬКО без getRandomMode3Target()
-  // target уже известен
-}
-
 
 function getRandomMode3Target(){
-  const r=Math.random()*100, {out, side}=mode3Chances;
-  if(r<out) return ['OUT_TOP','OUT_LEFT','OUT_RIGHT'][Math.floor(Math.random()*3)];
-  if(r<out+side) return Math.random()<0.5?'A':'D';
+  const r=Math.random()*100;
+  const {out,side,center}=mode3Chances;
+
+  if(r<out){
+    return ['OUT_TOP','OUT_LEFT','OUT_RIGHT']
+      [Math.floor(Math.random()*3)];
+  }
+  if(r<out+side){
+    return Math.random()<0.5?'A':'D';
+  }
   return 'W';
 }
 
-function animateBallMode3(targetType, onDone){
-  const g=getGoalGeometry(), targets=getBallTargets();
-  let endPos, thisNeedsSpace=true;
+let m3AnimFrame=null;
+
+function animateBallMode3(targetType,onDone){
+  const targets=getBallTargets();
+  const g=getGoalGeometry();
+  let endPos;
+  // Determine if this ball goes INTO the goal
+  let thisNeedsSpace=true;
+
   switch(targetType){
     case 'A':endPos=targets.leftCorner;break;
     case 'D':endPos=targets.rightCorner;break;
     case 'W':endPos=targets.center;break;
-    default: endPos=targetType==='OUT_TOP'?targets.overTop:(targetType==='OUT_LEFT'?targets.outLeft:targets.outRight); thisNeedsSpace=false;
+    case 'OUT_TOP':endPos=targets.overTop;thisNeedsSpace=false;break;
+    case 'OUT_LEFT':endPos=targets.outLeft;thisNeedsSpace=false;break;
+    case 'OUT_RIGHT':endPos=targets.outRight;thisNeedsSpace=false;break;
   }
+
+  // Set the per-round flag IMMEDIATELY so keydown handler can read it
   roundNeedsSpace=thisNeedsSpace;
-  const startT=performance.now(), duration=700;
-  function f(now){
-    let t=Math.min((now-startT)/duration, 1);
+
+  // Ball starts from far on the pitch (near the horizon), small, and flies
+  // DOWN toward the goal. This matches the behind-goalkeeper perspective.
+  const startX=g.cx;
+  const startY=g.horizonY + 20; // just below horizon — far on the pitch
+  const startSize=4;
+  const endSize=22;
+  const duration=700;
+  const startT=performance.now();
+
+  // For misses, calculate impact dot position right away so it shows from frame 1
+  const showImpact = !thisNeedsSpace;
+  const impactPos = showImpact ? {x:endPos.x, y:endPos.y} : null;
+
+  function frame(now){
+    let t=(now-startT)/duration;
+    if(t>1)t=1;
     const ease=1-Math.pow(1-t,3);
-    const x=g.cx+(endPos.x-g.cx)*ease, y=(g.horizonY+20)+(endPos.y-(g.horizonY+20))*ease;
-    drawMode3Scene({x,y,size:4+18*ease}, !thisNeedsSpace?endPos:null);
-    if(t<1) requestAnimationFrame(f); else if(onDone) onDone();
+    const x=startX+(endPos.x-startX)*ease;
+    const y=startY+(endPos.y-startY)*ease;
+    const size=startSize+(endSize-startSize)*ease;
+
+    // Always show impact dot for misses, even while ball is still flying
+    drawMode3Scene({x,y,size}, impactPos);
+
+    if(t<1){
+      m3AnimFrame=requestAnimationFrame(frame);
+    }else{
+      if(onDone)onDone();
+    }
   }
-  requestAnimationFrame(f);
+
+  m3AnimFrame=requestAnimationFrame(frame);
 }
 
-function getBallTargets(){
-  const g=getGoalGeometry(), cx=g.cx, goalH=g.postBaseY-g.crossbarY, goalW=g.br.x-g.bl.x;
-  return {
-    leftCorner:{x:g.bl.x+goalW*0.08, y:g.crossbarY+goalH*0.55},
-    rightCorner:{x:g.br.x-goalW*0.08, y:g.crossbarY+goalH*0.55},
-    center:{x:cx, y:g.crossbarY+goalH*0.45},
-    overTop:{x:cx, y:g.crossbarY-40},
-    outLeft:{x:g.bl.x-50, y:g.crossbarY+goalH*0.3},
-    outRight:{x:g.br.x+50, y:g.crossbarY+goalH*0.3}
-  };
+function clearMode3Ball(){
+  if(m3AnimFrame)cancelAnimationFrame(m3AnimFrame);
+  drawMode3Scene();
 }
 
-// --- LOGIC ---
-let m3SpacePressed=false, m3TimeoutId=null;
+// ===================== GAME LOGIC =====================
+
+let m3SpacePressed=false;
+let m3TimeoutId=null;
+let idleBall = null;
 
 function startRound(){
-  if(attempts>=maxAttempts){ (mode===4)?checkDuelEnd():showResults(); return; }
-  $('left').classList.remove('active'); $('right').classList.remove('active');
-  firstDir=null; firstDirTime=null; spaceTime=null; allKeySegments=[]; allSpacePresses=[];
-  
-  if(mode>=3){
-    drawMode3Scene();
-    roundStartTime=performance.now(); recording=true; waiting=false; m3SpacePressed=false;
+  if(attempts>=maxAttempts){showResults();return}
+$('left').classList.remove('active');
+$('right').classList.remove('active');
+$('ball').style.display = 'none';
+$('info').textContent = '';
+firstDir = null;
+firstDirTime = null;
+spaceTime = null;
+allKeySegments = [];
+allSpacePresses = [];
+
+  // ===== MODE 3 =====
+  if(mode===3){
+    clearMode3Ball();
+    showIdleBall();
+
+    roundStartTime = performance.now();
+    recording = true;
+    waiting = false;
+    m3SpacePressed = false;
+    roundNeedsSpace = false;
+
+    const delay = Math.random()*1500 + 600;
+
     setTimeout(()=>{
-      target = (mode===4) ? duelSequence[attempts] : getRandomMode3Target();
-      signalTime=performance.now(); waiting=true;
+      target = getRandomMode3Target();
+      signalTime = performance.now();
+      waiting = true;
+
       animateBallMode3(target, ()=>{
-        if(!roundNeedsSpace) m3TimeoutId=setTimeout(()=>{if(waiting){waiting=false;recording=false;finalizeKeys(performance.now());evaluateMode3();}},1200);
+        if(!roundNeedsSpace){
+          m3TimeoutId = setTimeout(()=>{
+            if(waiting){
+              waiting = false;
+              recording = false;
+              finalizeKeys(performance.now());
+              evaluateMode3();
+            }
+          },1200);
+        }
       });
-    }, Math.random()*1500+600);
-  } else {
-    // Mode 1, 2 logic
-    roundStartTime=performance.now(); recording=true; waiting=false;
-    setTimeout(()=>{
-      target=Math.random()<.5?'A':'D'; signalTime=performance.now(); waiting=true;
-      if(mode===1) $(target==='A'?'left':'right').classList.add('active');
-      if(mode===2){$('ball').style.display='block'; $('ball').style.left='50%'; $('ball').style.top='0%';
-        requestAnimationFrame(()=>{ $('ball').style.transition='all 0.35s linear'; $('ball').style.left=target==='A'?'20%':'80%'; $('ball').style.top='80%'; });}
-    }, Math.random()*1500+500);
+    }, delay);
+
+    return;
   }
+
+  // ===== MODE 1 / 2 =====
+// reset per round (mode 1 / 2)
+roundStartTime = performance.now();
+recording = true;
+waiting = false;
+
+firstDir = null;
+firstDirTime = null;
+spaceTime = null;
+allKeySegments = [];
+allSpacePresses = [];
+  const ball = $('ball');
+  const delay = Math.random()*1500 + 500;
+
+  setTimeout(()=>{
+    target = Math.random()<.5 ? 'A' : 'D';
+    signalTime = performance.now();
+    waiting = true;
+
+    if(mode===1){
+      $(target==='A'?'left':'right').classList.add('active');
+    }
+
+    if(mode===2){
+      ball.style.display='block';
+      ball.style.left='50%';
+      ball.style.top='0%';
+      ball.style.transition='none';
+      ball.style.transform='translate(-50%,0%)';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        ball.style.transition='all 0.35s linear';
+        ball.style.left=target==='A'?'20%':'80%';
+        ball.style.top='80%';
+      }));
+    }
+  }, delay);
 }
 
 document.addEventListener('keydown',e=>{
-  if(!recording || e.repeat)return;
-  const now=performance.now(), code=e.code;
-  if((code==='KeyA'||code==='KeyD'||(code==='KeyW'&&mode>=3))&&!allKeyDowns[code]){
+  if(!recording)return;
+  if(e.repeat)return;
+  const now=performance.now();
+  const code=e.code;
+
+  if((code==='KeyA'||code==='KeyD'||(code==='KeyW'&&mode===3))&&!allKeyDowns[code]){
     allKeyDowns[code]=now;
-    if(!firstDir&&waiting){ firstDir=code.replace('Key',''); firstDirTime=now; }
+    if(!firstDir&&waiting){
+      if(code==='KeyA')firstDir='A';
+      else if(code==='KeyD')firstDir='D';
+      else if(code==='KeyW')firstDir='W';
+      firstDirTime=now;
+    }
   }
+
   if(code==='Space'){
     allSpacePresses.push(now);
-    if(mode>=3&&waiting){
-      spaceTime=now; m3SpacePressed=true; waiting=false; recording=false;
-      if(!firstDir){ if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA']}else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD']}else if(allKeyDowns['KeyW']){firstDir='W';firstDirTime=allKeyDowns['KeyW']} }
-      if(m3TimeoutId)clearTimeout(m3TimeoutId); finalizeKeys(now); evaluateMode3();
-    } else if(waiting&&!spaceTime){
-      spaceTime=now; waiting=false; recording=false;
-      if(!firstDir){ if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA']}else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD']} }
-      finalizeKeys(now); evaluate();
+
+    if(mode===3&&waiting){
+      spaceTime=now;m3SpacePressed=true;
+      if(!firstDir){
+        if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA'];}
+        else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD'];}
+        else if(allKeyDowns['KeyW']){firstDir='W';firstDirTime=allKeyDowns['KeyW'];}
+      }
+      waiting=false;recording=false;
+      if(m3TimeoutId){clearTimeout(m3TimeoutId);m3TimeoutId=null;}
+      finalizeKeys(now);
+      evaluateMode3();
+      return;
+    }
+
+    if(waiting&&!spaceTime&&mode!==3){
+      spaceTime=now;
+      if(!firstDir){
+        if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA'];}
+        else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD'];}
+      }
+      waiting=false;recording=false;
+      finalizeKeys(now);
+      evaluate();
     }
   }
 });
 
-document.addEventListener('keyup',e=>{ if(allKeyDowns[e.code]){allKeySegments.push({code:e.code,down:allKeyDowns[e.code],up:performance.now()});delete allKeyDowns[e.code];} });
+document.addEventListener('keyup',e=>{
+  const now=performance.now();
+  const code=e.code;
+  if(allKeyDowns[code]){
+    allKeySegments.push({code,down:allKeyDowns[code],up:now});
+    delete allKeyDowns[code];
+  }
+});
 
-function finalizeKeys(endTime){ Object.keys(allKeyDowns).forEach(c=>{allKeySegments.push({code:c,down:allKeyDowns[c],up:endTime});delete allKeyDowns[c];}); }
+function finalizeKeys(endTime){
+  for(const code of Object.keys(allKeyDowns)){
+    allKeySegments.push({code,down:allKeyDowns[code],up:endTime});
+  }
+  allKeyDowns={};
+}
 
 function evaluateMode3(){
-  let ok=false, reaction=spaceTime?Math.round(spaceTime-signalTime):null, result;
-  if(!roundNeedsSpace){ if(m3SpacePressed) result='Мимо — не прыгай!'; else {ok=true; result='Мимо — верно!'} }
-  else {
-    if(!m3SpacePressed) result='Не прыгнул!'; else if(!firstDir) result='Без направления';
-    else if(spaceTime+tolerance<firstDirTime) result='Рано прыгнул'; else if(firstDir!==target) result='Неверно';
-    else {ok=true; if(reaction)reactions.push(reaction); result=`${reaction} мс`}
+  let result,ok=false;
+  const reaction=spaceTime?Math.round(spaceTime-signalTime):null;
+
+  // Use roundNeedsSpace — set at animation start, reliable
+  if(!roundNeedsSpace){
+    // Ball went OUTSIDE the goal
+    if(m3SpacePressed){
+      result='Мяч мимо — не прыгай!';
+    }else{
+      ok=true;
+      result='Мяч мимо — верно!';
+    }
+  }else{
+    // Ball went INSIDE the goal — need correct direction + space
+    if(!m3SpacePressed){
+      result='Не прыгнул!';
+    }else if(!firstDir){
+      result='SPACE без направления';
+    }else if(spaceTime+tolerance<firstDirTime){
+      result='SPACE раньше направления';
+    }else if(firstDir!==target){
+      result='Неверная сторона';
+    }else{
+      ok=true;
+      if(reaction!==null)reactions.push(reaction);
+      result=`${reaction} мс`;
+    }
   }
-  updateHudAndData(ok, result, reaction);
-  duelMyResults.push({
-  ok,
-  reaction: reaction ?? null
-});
+
+  const dot=$('dot'+attempts);
+  if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
+
+  let targetLabel;
+  switch(target){
+    case 'A':targetLabel='← Левый угол';break;
+    case 'D':targetLabel='→ Правый угол';break;
+    case 'W':targetLabel='↑ Центр ворот';break;
+    case 'OUT_TOP':targetLabel='⬆ Над воротами';break;
+    case 'OUT_LEFT':targetLabel='⬅ Слева от ворот';break;
+    case 'OUT_RIGHT':targetLabel='➡ Справа от ворот';break;
+  }
+
+  roundData.push({
+    attempt:attempts+1,target,firstDir,ok,result,
+    reactionMs:ok&&reaction?reaction:null,
+    signalRel:signalTime-roundStartTime,
+    spaceRel:spaceTime?spaceTime-roundStartTime:null,
+    allSpaceRel:allSpacePresses.map(t=>t-roundStartTime),
+    segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})),
+    targetLabel
+  });
+
+  attempts++;
+  $('info').textContent=(ok?'✅ ':'❌ ')+result;
+  setTimeout(startRound,900);
 }
 
 function evaluate(){
-  let ok=false, reaction=Math.round(spaceTime-signalTime), result;
-  if(!firstDir) result='Без направления'; else if(spaceTime+tolerance<firstDirTime) result='Рано прыгнул';
-  else if(firstDir!==target) result='Неверно'; else {ok=true; reactions.push(reaction); result=`${reaction} мс`}
-  updateHudAndData(ok, result, reaction);
-}
-
-function updateHudAndData(ok, result, reactionMs){
-  const dot=$('dot'+attempts); if(dot) dot.classList.add(ok?'success':'fail');
-  roundData.push({attempt:attempts+1, target, firstDir, ok, result, reactionMs, signalRel:signalTime-roundStartTime, spaceRel:spaceTime?spaceTime-roundStartTime:null, allSpaceRel:allSpacePresses.map(t=>t-roundStartTime), segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime}))});
-  attempts++; $('info').textContent=(ok?'✅ ':'❌ ')+result;
-  if(mode===4 && attempts === 15) conn.send({type: 'GAME_OVER', results: roundData});
-  setTimeout(startRound, 900);
-}
-
-// --- RESULTS & DUEL END ---
-function checkDuelEnd(){
-  if(roundData.length >= 15 && opponentResults) showDuelResults();
-  else $('info').textContent = "Ожидание соперника...";
-}
-
-function showDuelResults(){
-  let p1=0, p2=0, html='<div class="res-title">РЕЗУЛЬТАТЫ ДУЭЛИ</div><div class="res-avg">Сравнение по раундам</div>';
-  for(let i=0; i<15; i++){
-    const m=roundData[i], o=opponentResults[i], mt=m.reactionMs||9999, ot=o.reactionMs||9999;
-    let resText='Ничья', color='var(--border)';
-    if(m.ok && (!o.ok || mt < ot)){ p1++; resText='Вы +1'; color='rgba(0,230,118,0.1)'; }
-    else if(o.ok && (!m.ok || ot < mt)){ p2++; resText='Друг +1'; color='rgba(255,61,113,0.1)'; }
-    html+=`<div class="round-card" style="background:${color};padding:10px;margin-bottom:5px;font-size:14px"><b>Р${i+1}:</b> Вы: ${m.result} | Друг: ${o.result} — <i>${resText}</i></div>`;
+  let result,ok=false;
+  if(!firstDir){
+    result='SPACE без направления';
+  }else if(spaceTime+tolerance<firstDirTime){
+    result='SPACE раньше направления';
+  }else if(firstDir!==target){
+    result='Неверная сторона';
+  }else{
+    const reaction=Math.round(spaceTime-signalTime);
+    reactions.push(reaction);
+    result=`${reaction} мс`;ok=true;
   }
-  const win = p1>p2?"ПОБЕДА":(p1<p2?"ПОРАЖЕНИЕ":"НИЧЬЯ");
-  html=`<div class="res-title" style="color:var(--accent)">${win}</div><div class="res-avg" style="font-size:40px">${p1} : ${p2}</div>` + html;
-  html+=`<div class="btn-row"><button class="restart-btn" onclick="location.href=window.location.pathname">В меню</button></div>`;
-  $('resultsOverlay').classList.add('show'); $('resultsContent').innerHTML=html;
+
+  const dot=$('dot'+attempts);
+  if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
+
+  roundData.push({
+    attempt:attempts+1,target,firstDir,ok,result,
+    reactionMs:ok?Math.round(spaceTime-signalTime):null,
+    signalRel:signalTime-roundStartTime,
+    spaceRel:spaceTime?spaceTime-roundStartTime:null,
+    allSpaceRel:allSpacePresses.map(t=>t-roundStartTime),
+    segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime}))
+  });
+
+  attempts++;
+  $('info').textContent=(ok?'✅ ':'❌ ')+result;
+  setTimeout(startRound,700);
 }
 
 function showResults(){
+  $('info').textContent='';
+  if(mode===3)$('mode3Area').style.display='none';
   $('resultsOverlay').classList.add('show');
-  let avg=reactions.length?Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length)+' мс':'—';
+  let avg='—';
+  if(reactions.length)avg=Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length)+' мс';
+
   let html=`<div class="res-title">Результаты</div><div class="res-avg">Средняя реакция: ${avg}</div>`;
-  html+=`<div class="btn-row"><button class="restart-btn" onclick="restartSameMode()">Снова</button><button class="back-btn" onclick="backToMenu()">В меню</button></div>`;
+  for(const rd of roundData)html+=buildRoundCard(rd);
+  html+=`<div class="btn-row">
+    <button class="restart-btn" onclick="restartSameMode()">Играть снова</button>
+    <button class="back-btn" onclick="backToMenu()">В меню</button>
+  </div>`;
   $('resultsContent').innerHTML=html;
 }
-  duelConn.on('data', data => {
-  if (data.type === 'MY_RESULTS') {
-    duelEnemyResults = data.results;
-    calculateDuelScore();
-  }
-});
-function calculateDuelScore() {
-  for (let i = 0; i < 15; i++) {
-    const a = duelMyResults[i];
-    const b = duelEnemyResults[i];
 
-    if (a.ok && !b.ok) duelScoreMe++;
-    else if (!a.ok && b.ok) duelScoreEnemy++;
-    else if (a.ok && b.ok && a.reaction !== b.reaction) {
-      if (a.reaction < b.reaction) duelScoreMe++;
-      else duelScoreEnemy++;
+function buildRoundCard(rd){
+  const sig=rd.signalRel;
+  let maxT=sig+200,minT=0;
+  for(const s of rd.segments){maxT=Math.max(maxT,s.up);minT=Math.min(minT,s.down);}
+  if(rd.spaceRel)maxT=Math.max(maxT,rd.spaceRel);
+  for(const t of rd.allSpaceRel)maxT=Math.max(maxT,t);
+
+  const pad=Math.max((maxT-minT)*0.08,30);
+  minT-=pad;maxT+=pad;
+  const range=maxT-minT;
+  const toP=t=>((t-minT)/range*100);
+
+  let inner='';
+  const sigP=toP(sig);
+  inner+=`<div class="tl-prezone" style="left:0;width:${sigP}%"></div>`;
+  inner+=`<div class="tl-signal-line" style="left:${sigP}%"></div>`;
+  inner+=`<div class="tl-marker signal-mk" style="left:${sigP}%"></div>`;
+
+  for(const s of rd.segments){
+    if(s.code==='KeyA'||s.code==='KeyD'||s.code==='KeyW'){
+      const l=toP(s.down),r=toP(s.up);
+      const isA=s.code==='KeyA';
+      const isW=s.code==='KeyW';
+      const cls=isA?'key-a':isW?'key-w':'key-d';
+      const yOff=isA?-14:isW?-2:10;
+      const w=Math.max(r-l,0.4);
+      inner+=`<div class="tl-bar ${cls}" style="left:${l}%;width:${w}%;top:calc(50% + ${yOff}px)"></div>`;
     }
   }
+  for(const t of rd.allSpaceRel){
+    inner+=`<div class="tl-marker space-mk" style="left:${toP(t)}%"></div>`;
+  }
 
-  showDuelResults();
-}
-function showDuelResults() {
-  $('resultsOverlay').classList.add('show');
-  $('resultsContent').innerHTML = `
-    <div class="res-title">Дуэль окончена</div>
-    <div class="res-avg">
-      Ты: ${duelScoreMe} · Противник: ${duelScoreEnemy}
+  const nTicks=6;let ticks='';
+  for(let i=0;i<=nTicks;i++){
+    const t=minT+(range*i/nTicks);
+    const rel=Math.round(t-sig);
+    const label=(rel>=0?'+':'')+rel;
+    ticks+=`<div class="tl-label" style="left:${toP(t)}%">${label}</div>`;
+  }
+  ticks+=`<div class="tl-label top" style="left:${sigP}%;color:#fff;font-weight:bold">▼ сигнал</div>`;
+  if(rd.spaceRel!=null){
+    ticks+=`<div class="tl-label top" style="left:${toP(rd.spaceRel)}%;color:var(--warn)">SPACE</div>`;
+  }
+
+  const resClass=rd.ok?'ok':'err';
+  const resText=rd.ok?`✅ ${rd.reactionMs?rd.reactionMs+' мс':'Верно'}`:`❌ ${rd.result}`;
+  let targetLabel=rd.targetLabel||(rd.target==='A'?'← LEFT (A)':'→ RIGHT (D)');
+  const showW=mode===3;
+
+  return `<div class="round-card">
+    <div class="round-header">
+      <span class="round-num">Раунд ${rd.attempt} · Цель: ${targetLabel}</span>
+      <span class="round-result ${resClass}">${resText}</span>
     </div>
-    <div class="btn-row">
-      <button class="back-btn" onclick="backToMenu()">В меню</button>
+    <div class="timeline-wrap">
+      <div class="tl-axis"></div>
+      ${ticks}${inner}
     </div>
-  `;
+    <div class="tl-legend">
+      <div class="tl-legend-item"><div class="sw" style="background:var(--accent)"></div>A (лево)</div>
+      <div class="tl-legend-item"><div class="sw" style="background:var(--purple)"></div>D (право)</div>
+      ${showW?'<div class="tl-legend-item"><div class="sw" style="background:var(--success)"></div>W (центр)</div>':''}
+      <div class="tl-legend-item"><div class="sw circle" style="background:var(--warn)"></div>SPACE</div>
+      <div class="tl-legend-item"><div class="sw circle" style="background:#fff"></div>Сигнал</div>
+      <div class="tl-legend-item"><div class="sw" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15)"></div>До сигнала</div>
+    </div>
+  </div>`;
 }
 
+window.restartSameMode=function(){
+  maxAttempts = (mode===3) ? 15 : 5;
+  resetGame();
+  if(mode===3){
+    $('mode3Area').style.display='block';
+    $('gameArea').style.display='none';
+    initMode3Canvas();
+  }
+  startRound();
+}
+window.backToMenu=function(){
+  resetGame();
+  $('mode3Area').style.display='none';
+  $('gameArea').style.display='flex';
+  $('menu').style.display='flex';
+}
+// ===== MODE 3 SETTINGS LOGIC =====
+const outR = $('outRange'),
+      sideR = $('sideRange'),
+      centerR = $('centerRange');
 
-window.restartSameMode=()=>startGame(mode);
-window.backToMenu=()=>{resetGame(); $('mode3Area').style.display='none'; $('gameArea').style.display='flex'; $('menu').style.display='flex';};
-
-// --- SETTINGS ---
-const outR=$('outRange'), sideR=$('sideRange'), centerR=$('centerRange');
 function updatePercents(){
-  let o=+outR.value, s=+sideR.value, c=+centerR.value, sum=o+s+c||1;
-  o=Math.round(o/sum*100); s=Math.round(s/sum*100); c=100-o-s;
-  $('pOut').textContent=o; $('pSide').textContent=s; $('pCenter').textContent=c;
-  mode3Chances={out:o, side:s, center:c};
-}
-[outR,sideR,centerR].forEach(r=>r.oninput=updatePercents);
-$('startMode3').onclick=()=>{ $('mode3Settings').style.display='none'; startGame(3); };
-updatePercents();
-</script>
-  <div id="duelLobby" style="
-position:fixed;inset:0;z-index:3000;
-background:rgba(10,10,15,.97);
-display:none;flex-direction:column;
-align-items:center;justify-content:center;
-gap:20px;text-align:center;
-">
-  <h2 style="font-size:32px">Дуэль · Комната ожидания</h2>
-  <p>Скопируй ссылку и отправь другу</p>
-  <input id="duelLink" readonly style="
-    width:320px;padding:12px;
-    background:#111;border:1px solid #333;
-    color:#0ff;text-align:center;
-  ">
-  <div id="duelStatus" style="color:#888">Ожидание игрока…</div>
-</div>
+  let o = +outR.value,
+      s = +sideR.value,
+      c = +centerR.value;
 
+  const sum = o + s + c || 1;
+
+  o = Math.round(o / sum * 100);
+  s = Math.round(s / sum * 100);
+  c = 100 - o - s;
+
+  $('pOut').textContent = o;
+  $('pSide').textContent = s;
+  $('pCenter').textContent = c;
+
+  mode3Chances = {
+    out: o,
+    side: s,
+    center: c
+  };
+}
+
+[outR, sideR, centerR].forEach(r => {
+  r.addEventListener('input', updatePercents);
+});
+
+updatePercents();
+
+// Кнопка ОК — старт режима 3
+$('startMode3').onclick = () => {
+  $('mode3Settings').style.display = 'none';
+  startGame(3);
+};
+
+</script>
 </body>
 </html>
