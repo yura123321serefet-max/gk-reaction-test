@@ -10,98 +10,32 @@
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:#0a0a0f;
-  color:#e0e0e0;
-  font-family:'Outfit',sans-serif;
-  height:100vh;
-  overflow:hidden;
-}
+body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100vh;overflow:hidden}
 
 /* ===== MENU ===== */
-#menu{
-  position:fixed;inset:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:18px;
-  z-index:1000;
-}
-.menu-btn{
-  padding:16px 36px;
-  font-size:18px;
-  font-weight:700;
-  border-radius:12px;
-  border:2px solid #1e1e2e;
-  background:#14141f;
-  color:#fff;
-  cursor:pointer;
-}
+#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:1000}
+.menu-btn{padding:16px 36px;font-size:18px;font-weight:700;border-radius:12px;border:2px solid #1e1e2e;background:#14141f;color:#fff;cursor:pointer}
 .menu-btn:hover{border-color:#00e5ff}
 
 /* ===== WAITING ROOM ===== */
-#waitingRoom{
-  position:fixed;inset:0;
-  background:#0a0a0f;
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:18px;
-  z-index:1500;
-  text-align:center;
-}
-#duelLink{
-  width:420px;
-  max-width:90vw;
-  padding:12px;
-  border-radius:8px;
-  border:1px solid #333;
-  background:#14141f;
-  color:#00e5ff;
-  text-align:center;
-  font-family:'JetBrains Mono';
-}
+#waitingRoom{position:fixed;inset:0;background:#0a0a0f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:1500;text-align:center}
+#duelLink{width:420px;max-width:90vw;padding:12px;border-radius:8px;border:1px solid #333;background:#14141f;color:#00e5ff;text-align:center;font-family:'JetBrains Mono'}
 
 /* ===== HUD ===== */
-#hud{
-  position:fixed;
-  top:16px;
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  gap:6px;
-}
-.dot{
-  width:14px;
-  height:14px;
-  border-radius:50%;
-  border:2px solid #333;
-}
+#hud{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid #333}
 .dot.success{background:#00e676;border-color:#00e676}
 .dot.fail{background:#ff3d71;border-color:#ff3d71}
 
 /* ===== INFO ===== */
-#info{
-  position:fixed;
-  bottom:16px;
-  width:100%;
-  text-align:center;
-  font-family:'JetBrains Mono';
-  color:#aaa;
-}
+#info{position:fixed;bottom:16px;width:100%;text-align:center;font-family:'JetBrains Mono';color:#aaa;z-index:100}
+
+/* ===== MODE 3 CANVAS ===== */
+#mode3Area{position:fixed;inset:0;display:none;z-index:10}
+#mode3Canvas{width:100%;height:100%;display:block}
 
 /* ===== RESULTS ===== */
-#resultsOverlay{
-  position:fixed;
-  inset:0;
-  background:#0a0a0f;
-  display:none;
-  z-index:2000;
-  padding:40px;
-  text-align:center;
-}
+#resultsOverlay{position:fixed;inset:0;background:#0a0a0f;display:none;z-index:2000;padding:40px;text-align:center}
 #resultsOverlay.show{display:block}
 </style>
 </head>
@@ -111,65 +45,144 @@ body{
 <!-- ===== MENU ===== -->
 <div id="menu">
   <h1>GK Reaction Test</h1>
-  <button class="menu-btn" onclick="startSolo()">Режим 3 — Соло</button>
+  <button class="menu-btn" onclick="startGame(MODE_SOLO)">Режим 3 — Соло</button>
   <button class="menu-btn" onclick="createDuel()">Режим 4 — Дуэль</button>
 </div>
 
 <!-- ===== WAITING ROOM ===== -->
 <div id="waitingRoom">
   <h2>Комната ожидания</h2>
-  <p style="color:#aaa;max-width:420px">
-    Отправь эту ссылку другу.<br>
-    Игра начнётся автоматически, когда он подключится.
-  </p>
+  <p style="color:#aaa">Отправь ссылку другу</p>
   <input id="duelLink" readonly>
-  <button class="menu-btn" onclick="copyLink()">Скопировать ссылку</button>
+  <button class="menu-btn" onclick="copyLink()">Скопировать</button>
   <button class="menu-btn" onclick="cancelDuel()">Отмена</button>
 </div>
 
 <div id="hud"></div>
 <div id="info"></div>
+
+<div id="mode3Area">
+  <canvas id="mode3Canvas"></canvas>
+</div>
+
 <div id="resultsOverlay"></div>
 
 <script>
 /* =====================================================
-   DUEL / PEERJS
+   CONSTANTS
+===================================================== */
+const MODE_SOLO = 3;
+const MODE_DUEL = 4;
+
+/* =====================================================
+   PEER / DUEL
 ===================================================== */
 let peer, conn;
-let isHost = false;
 let duelRounds = [];
 let duelIndex = 0;
-let myResults = [];
-let enemyResults = [];
 
+/* =====================================================
+   GAME STATE
+===================================================== */
+let mode = MODE_SOLO;
+let attempts = 0;
+let maxAttempts = 15;
+let target = null;
+let signalTime = 0;
+let reactions = [];
+let roundData = [];
+
+/* =====================================================
+   MODE 3 CANVAS
+===================================================== */
+const M3 = {canvas:null,ctx:null,W:0,H:0};
+const stadiumImg = new Image();
+stadiumImg.src = 'stadium_bg.png';
+
+function initMode3Canvas(){
+  M3.canvas = document.getElementById('mode3Canvas');
+  M3.ctx = M3.canvas.getContext('2d');
+  resizeMode3();
+  window.onresize = resizeMode3;
+}
+
+function resizeMode3(){
+  M3.canvas.width = window.innerWidth;
+  M3.canvas.height = window.innerHeight;
+  M3.W = M3.canvas.width;
+  M3.H = M3.canvas.height;
+  drawScene();
+}
+
+function drawScene(ball){
+  const ctx=M3.ctx,W=M3.W,H=M3.H;
+  if(stadiumImg.complete){
+    ctx.drawImage(stadiumImg,0,0,W,H);
+  }else{
+    ctx.fillStyle='#0b0f1a';
+    ctx.fillRect(0,0,W,H);
+  }
+  if(ball){
+    ctx.fillStyle='#fff';
+    ctx.beginPath();
+    ctx.arc(ball.x,ball.y,12,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+
+/* =====================================================
+   GAME START
+===================================================== */
+function startGame(m){
+  mode = m;
+  attempts = 0;
+  duelIndex = 0;
+  reactions = [];
+  roundData = [];
+
+  document.getElementById('menu').style.display='none';
+  document.getElementById('waitingRoom').style.display='none';
+  document.getElementById('resultsOverlay').classList.remove('show');
+
+  document.getElementById('mode3Area').style.display='block';
+  initMode3Canvas();
+  buildHud();
+  startRound();
+}
+
+/* =====================================================
+   DUEL FLOW
+===================================================== */
 function createDuel(){
-  isHost = true;
   peer = new Peer();
-
   peer.on('open', id=>{
-    const link = location.origin + location.pathname + '?duel=' + id;
     document.getElementById('menu').style.display='none';
     document.getElementById('waitingRoom').style.display='flex';
-    document.getElementById('duelLink').value = link;
+    document.getElementById('duelLink').value =
+      location.origin+location.pathname+'?duel='+id;
   });
-
   peer.on('connection', c=>{
-    conn = c;
+    conn=c;
     conn.on('open', ()=>{
-      document.getElementById('waitingRoom').style.display='none';
-      startDuelAsHost();
+      duelRounds = generateRounds();
+      conn.send({type:'INIT',rounds:duelRounds});
+      startGame(MODE_DUEL);
     });
     conn.on('data', onMessage);
   });
 }
 
-function joinDuel(hostId){
-  isHost = false;
-  peer = new Peer();
-  peer.on('open', ()=>{
-    conn = peer.connect(hostId);
-    conn.on('data', onMessage);
-  });
+function onMessage(msg){
+  if(msg.type==='INIT'){
+    duelRounds = msg.rounds;
+    startGame(MODE_DUEL);
+  }
+}
+
+function copyLink(){
+  navigator.clipboard.writeText(
+    document.getElementById('duelLink').value
+  );
 }
 
 function cancelDuel(){
@@ -179,144 +192,100 @@ function cancelDuel(){
   document.getElementById('menu').style.display='flex';
 }
 
-function copyLink(){
-  navigator.clipboard.writeText(
-    document.getElementById('duelLink').value
-  );
-  alert('Ссылка скопирована');
-}
-
-function startDuelAsHost(){
-  duelRounds = generateRounds();
-  conn.send({type:'INIT', rounds:duelRounds});
-  startGame();
-}
-
-function onMessage(msg){
-  if(msg.type==='INIT'){
-    duelRounds = msg.rounds;
-    startGame();
-  }
-  if(msg.type==='RESULTS'){
-    enemyResults = msg.results;
-    finishCompare();
-  }
-}
-
 /* =====================================================
-   GAME LOGIC (SIMPLIFIED MODE 3)
+   ROUNDS
 ===================================================== */
-let attempts = 0;
-const MAX = 15;
-let signalTime = null;
-let currentTarget = null;
-
 function generateRounds(){
   const arr=[];
   for(let i=0;i<15;i++){
     arr.push({
-      target: ['A','D','W','OUT'][Math.floor(Math.random()*4)],
-      delay: Math.random()*1500+600
+      target:['A','D','W','OUT'][Math.floor(Math.random()*4)],
+      delay:Math.random()*1500+600
     });
   }
   return arr;
 }
 
-function startGame(){
-  attempts=0;
-  duelIndex=0;
-  myResults=[];
-  enemyResults=[];
-  document.getElementById('menu').style.display='none';
-  buildHud();
-  startRound();
-}
-
-function buildHud(){
-  let h='';
-  for(let i=0;i<MAX;i++) h+=`<div class="dot" id="dot${i}"></div>`;
-  document.getElementById('hud').innerHTML=h;
-}
-
 function startRound(){
-  if(attempts>=MAX){
-    sendResults();
+  if(attempts>=maxAttempts){
+    showResults();
     return;
   }
-  const r = duelRounds[duelIndex];
-  document.getElementById('info').textContent = 'Раунд ' + (attempts+1);
+  const r = (mode===MODE_DUEL) ? duelRounds[duelIndex] : generateRounds()[0];
+  target = r.target;
+  document.getElementById('info').textContent='Раунд '+(attempts+1);
+
   setTimeout(()=>{
-    currentTarget = r.target;
     signalTime = performance.now();
+    animateBall();
   }, r.delay);
 }
 
-document.addEventListener('keydown',e=>{
-  if(!signalTime)return;
-  if(e.code!=='Space')return;
+function animateBall(){
+  const start={x:M3.W/2,y:80};
+  const end={x:M3.W/2 + (Math.random()-0.5)*300,y:M3.H*0.7};
+  const t0=performance.now(),dur=700;
 
-  const rt = Math.round(performance.now()-signalTime);
-  const ok = currentTarget!=='OUT';
-  myResults.push({ok,reaction:ok?rt:null});
-  mark(ok);
+  function frame(t){
+    let p=(t-t0)/dur;if(p>1)p=1;
+    const x=start.x+(end.x-start.x)*p;
+    const y=start.y+(end.y-start.y)*p;
+    drawScene({x,y});
+    if(p<1)requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* =====================================================
+   INPUT
+===================================================== */
+document.addEventListener('keydown',e=>{
+  if(!signalTime || e.code!=='Space')return;
+  const rt=Math.round(performance.now()-signalTime);
+  reactions.push(rt);
   attempts++;
   duelIndex++;
-  signalTime=null;
+  signalTime=0;
+  mark(true);
   setTimeout(startRound,600);
 });
 
+function buildHud(){
+  let h='';
+  for(let i=0;i<15;i++)h+=`<div class="dot" id="dot${i}"></div>`;
+  document.getElementById('hud').innerHTML=h;
+}
+
 function mark(ok){
-  document.getElementById('dot'+attempts)
-    .className = 'dot ' + (ok?'success':'fail');
+  document.getElementById('dot'+(attempts-1))
+    .className='dot '+(ok?'success':'fail');
 }
 
 /* =====================================================
    RESULTS
 ===================================================== */
-function sendResults(){
-  if(conn) conn.send({type:'RESULTS',results:myResults});
-  if(enemyResults.length) finishCompare();
-}
-
-function finishCompare(){
-  const r = compare(myResults,enemyResults);
-  const o = document.getElementById('resultsOverlay');
+function showResults(){
+  const o=document.getElementById('resultsOverlay');
   o.classList.add('show');
-  o.innerHTML = `
-    <h2>Дуэль завершена</h2>
-    <p>Ты: ${r.me} · Соперник: ${r.enemy}</p>
-    <h1>${r.me>r.enemy?'🏆 ПОБЕДА':'💀 ПОРАЖЕНИЕ'}</h1>
-    <br>
+  const avg=Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length);
+  o.innerHTML=`
+    <h2>Готово</h2>
+    <p>Средняя реакция: ${avg} мс</p>
     <button class="menu-btn" onclick="location.reload()">В меню</button>
   `;
-}
-
-function compare(a,b){
-  let me=0,enemy=0;
-  for(let i=0;i<15;i++){
-    if(a[i].ok && !b[i].ok) me++;
-    else if(!a[i].ok && b[i].ok) enemy++;
-    else if(a[i].ok && b[i].ok){
-      if(a[i].reaction < b[i].reaction) me++;
-      else if(b[i].reaction < a[i].reaction) enemy++;
-    }
-  }
-  return {me,enemy};
-}
-
-/* =====================================================
-   SOLO MODE
-===================================================== */
-function startSolo(){
-  duelRounds = generateRounds();
-  startGame();
 }
 
 /* =====================================================
    AUTO JOIN
 ===================================================== */
-const q = new URLSearchParams(location.search);
-if(q.get('duel')) joinDuel(q.get('duel'));
+const q=new URLSearchParams(location.search);
+if(q.get('duel')){
+  peer=new Peer();
+  peer.on('open',()=>{
+    conn=peer.connect(q.get('duel'));
+    conn.on('data',onMessage);
+  });
+}
 </script>
 
 </body>
