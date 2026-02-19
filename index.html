@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GK Duel 3D - No Goal Lines</title>
+<title>GK Duel 3D - Settings Edition</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -14,12 +14,13 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
   --border:#1e1e2e;--success:#00e676;--fail:#ff3d71;--warn:#ffab00;
 }
 
-/* Меню и Оверлеи */
-#menu, #lobby, #resultsOverlay, #waitingScreen {
+/* Экраны */
+#menu, #lobby, #resultsOverlay, #waitingScreen, #setupMenu {
   position:fixed;inset:0;background:var(--bg);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:1000;
 }
 #waitingScreen { z-index: 1500; background: rgba(10,10,15,0.9); display: none; }
+#setupMenu { display: none; }
 
 h1 { font-size:36px; font-weight:900; background:linear-gradient(135deg,var(--accent),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 
@@ -30,69 +31,84 @@ h1 { font-size:36px; font-weight:900; background:linear-gradient(135deg,var(--ac
 }
 .menu-btn:hover{border-color:var(--accent);transform:translateY(-2px)}
 
-/* Игровая зона */
+/* Слайдеры */
+.settings-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px; width:400px; max-width:90vw; }
+.slider-row { margin-bottom: 20px; }
+.slider-row label { display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px; color:#aaa; }
+.slider-row b { color: var(--accent); }
+input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--accent); }
+
+/* Игра */
 #mode3Area { position:fixed; inset:0; display:none; overflow:hidden; z-index:40; }
 #mode3Canvas { width:100%; height:100%; display:block; }
 #hud { position:fixed; top:16px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:50; }
-.dot { width:12px; height:12px; border-radius:50%; border:2px solid #333; transition: all 0.3s; }
+.dot { width:12px; height:12px; border-radius:50%; border:2px solid #333; }
 .dot.success { background:var(--success); border-color:var(--success); box-shadow:0 0 8px var(--success); }
 .dot.fail { background:var(--fail); border-color:var(--fail); box-shadow:0 0 8px var(--fail); }
 .dot.current { border-color:var(--accent); box-shadow:0 0 8px var(--accent); }
 
 /* Статистика */
 #resultsOverlay { display:none; z-index:2000; padding: 20px 10px; flex-direction: column; }
-.results-container {
-    width: 100%; max-width: 500px; background: var(--card); border-radius: 20px;
-    border: 1px solid var(--border); display: flex; flex-direction: column;
-    max-height: 85vh; overflow: hidden;
-}
+.results-container { width: 100%; max-width: 500px; background: var(--card); border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; max-height: 85vh; overflow: hidden; }
 .results-header { padding: 20px; text-align: center; border-bottom: 1px solid var(--border); }
 .score-row { font-size: 48px; font-weight: 900; color: var(--accent); margin: 5px 0; }
 .scroll-area { flex: 1; overflow-y: auto; padding: 15px; background: rgba(0,0,0,0.2); }
-
-.mini-card {
-    background: #1a1a2e; border-radius: 10px; padding: 10px 12px;
-    margin-bottom: 8px; border-left: 4px solid #333;
-}
+.mini-card { background: #1a1a2e; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; border-left: 4px solid #333; }
 .mini-card.win { border-left-color: var(--success); }
 .mini-card.loss { border-left-color: var(--fail); }
-.mini-card.draw { border-left-color: #555; }
-.mini-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px; }
-.mini-label { color: #888; font-family: 'JetBrains Mono'; font-size: 12px; }
-
+.mini-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
 .mini-timeline { height: 6px; background: #0d0d18; border-radius: 3px; position: relative; margin-top: 8px; }
 .m-marker { position: absolute; width: 6px; height: 6px; border-radius: 50%; top: 0; transform: translateX(-50%); }
 .m-sig { background: #fff; }
 .m-me { background: var(--accent); z-index: 2; }
 .m-opp { background: var(--fail); opacity: 0.6; }
 
-input[type="text"] { padding:10px; border-radius:8px; border:1px solid var(--border); background:#1a1a2e; color:#fff; text-align:center; width:200px; }
-.scroll-area::-webkit-scrollbar { width: 6px; }
-.scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+input[type="text"] { padding:10px; border-radius:8px; border:1px solid var(--border); background:#1a1a2e; color:#fff; text-align:center; width:220px; }
 </style>
 </head>
 <body>
 
 <div id="menu">
     <h1>GK DUEL 3D</h1>
-    <button class="menu-btn" onclick="showLobby('create')">Создать дуэль</button>
+    <button class="menu-btn" onclick="openSetup()">Создать дуэль</button>
     <button class="menu-btn" onclick="showLobby('join')">Войти по ID</button>
+</div>
+
+<div id="setupMenu">
+    <div class="settings-card">
+        <h2 style="margin-bottom:20px; text-align:center">Настройка ударов</h2>
+        <div class="slider-row">
+            <label>Мимо ворот: <b><span id="vOut">30</span>%</b></label>
+            <input type="range" id="rOut" min="0" max="100" value="30">
+        </div>
+        <div class="slider-row">
+            <label>В створ (углы): <b><span id="vSide">50</span>%</b></label>
+            <input type="range" id="rSide" min="0" max="100" value="50">
+        </div>
+        <div class="slider-row">
+            <label>По центру: <b><span id="vCenter">20</span>%</b></label>
+            <input type="range" id="rCenter" min="0" max="100" value="20">
+        </div>
+        <button class="menu-btn" style="width:100%; margin-top:10px" onclick="showLobby('create')">ГОТОВО</button>
+        <button class="menu-btn" style="width:100%; margin-top:10px; background:transparent; border:none; color:#555" onclick="location.reload()">ОТМЕНА</button>
+    </div>
 </div>
 
 <div id="lobby" style="display:none">
     <h2 id="statusTitle">Подключение...</h2>
     <div id="idArea" style="display:none">
         <input type="text" id="myId" readonly onclick="this.select()">
+        <p style="font-size:12px; color:#555; margin-top:10px">Отправь этот ID другу</p>
     </div>
     <div id="joinArea" style="display:none">
-        <input type="text" id="peerIdInput" placeholder="ID друга">
-        <button class="menu-btn" style="margin-top:15px" onclick="connectToPeer()">Войти</button>
+        <input type="text" id="peerIdInput" placeholder="Введите ID друга">
+        <button class="menu-btn" style="margin-top:15px" onclick="connectToPeer()">Войти в игру</button>
     </div>
 </div>
 
 <div id="waitingScreen">
     <h1>ГОТОВО!</h1>
-    <p style="color:#888">Ждем оппонента...</p>
+    <p style="color:#888">Ждем, когда оппонент закончит раунды...</p>
 </div>
 
 <div id="mode3Area">
@@ -116,8 +132,7 @@ input[type="text"] { padding:10px; border-radius:8px; border:1px solid var(--bor
 
 <script>
 const M3 = { canvas: null, ctx: null, W: 0, H: 0 };
-const stadiumImg = new Image(); 
-stadiumImg.src = 'stadium_bg.png'; 
+const stadiumImg = new Image(); stadiumImg.src = 'stadium_bg.png';
 
 let peer, conn, isHost = false;
 let currentRound = 0;
@@ -125,19 +140,38 @@ const MAX_ROUNDS = 15;
 let sequence = [];
 let myResults = [];
 let opponentResults = [];
+let chances = { out: 30, side: 50, center: 20 };
 
 let signalTime = 0, spaceTime = null, firstDir = null, waiting = false;
 let roundNeedsSpace = false;
 let m3AnimFrame = null;
 
-// --- СЕТЕВАЯ ЛОГИКА ---
+// --- ЛОГИКА НАСТРОЕК ---
+function openSetup() {
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('setupMenu').style.display = 'flex';
+}
+
+const rOut = document.getElementById('rOut'), rSide = document.getElementById('rSide'), rCenter = document.getElementById('rCenter');
+function updatePercents() {
+    let o = +rOut.value, s = +rSide.value, c = +rCenter.value, sum = o + s + c || 1;
+    o = Math.round(o/sum*100); s = Math.round(s/sum*100); c = 100-o-s;
+    document.getElementById('vOut').textContent = o;
+    document.getElementById('vSide').textContent = s;
+    document.getElementById('vCenter').textContent = c;
+    chances = { out: o, side: s, center: c };
+}
+[rOut, rSide, rCenter].forEach(r => r.addEventListener('input', updatePercents));
+
+// --- СЕТЕВАЯ ЧАСТЬ ---
 function showLobby(mode) {
     document.getElementById('menu').style.display = 'none';
+    document.getElementById('setupMenu').style.display = 'none';
     document.getElementById('lobby').style.display = 'flex';
     peer = new Peer();
     peer.on('open', id => {
         document.getElementById('myId').value = id;
-        document.getElementById('statusTitle').innerText = mode === 'create' ? "ID ДЛЯ ДРУГА:" : "ВВЕДИТЕ ID:";
+        document.getElementById('statusTitle').innerText = mode === 'create' ? "ВАШ ID:" : "ВВЕДИТЕ ID ДРУГА:";
         if(mode === 'create') { isHost = true; document.getElementById('idArea').style.display = 'block'; }
         else document.getElementById('joinArea').style.display = 'block';
     });
@@ -152,8 +186,14 @@ function connectToPeer() {
 function setupConn() {
     conn.on('open', () => {
         if(isHost) {
-            const types = ['A','D','W','OUT_TOP','OUT_LEFT','OUT_RIGHT'];
-            for(let i=0; i<MAX_ROUNDS; i++) sequence.push(types[Math.floor(Math.random()*6)]);
+            // Генерируем последовательность на основе настроек
+            sequence = [];
+            for(let i=0; i<MAX_ROUNDS; i++) {
+                let r = Math.random()*100;
+                if(r < chances.out) sequence.push(['OUT_TOP','OUT_LEFT','OUT_RIGHT'][Math.floor(Math.random()*3)]);
+                else if(r < chances.out + chances.side) sequence.push(Math.random()<0.5?'A':'D');
+                else sequence.push('W');
+            }
             conn.send({ type: 'START', sequence });
             startDuel();
         }
@@ -164,20 +204,14 @@ function setupConn() {
     });
 }
 
-// --- 3D ДВИЖОК (БЕЗ ОТРИСОВКИ ВОРОТ) ---
+// --- ВИЗУАЛ И МЕХАНИКА ---
 function startDuel() {
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('mode3Area').style.display = 'block';
     M3.canvas = document.getElementById('mode3Canvas');
     M3.ctx = M3.canvas.getContext('2d');
-    
-    const resize = () => { 
-        M3.W = M3.canvas.width = window.innerWidth; 
-        M3.H = M3.canvas.height = window.innerHeight; 
-        drawScene(); 
-    };
-    window.addEventListener('resize', resize); 
-    resize();
+    const resize = () => { M3.W = M3.canvas.width = window.innerWidth; M3.H = M3.canvas.height = window.innerHeight; };
+    window.addEventListener('resize', resize); resize();
     
     let h = ''; for(let i=0; i<MAX_ROUNDS; i++) h += `<div class="dot" id="dot${i}"></div>`;
     document.getElementById('hud').innerHTML = h;
@@ -186,66 +220,30 @@ function startDuel() {
 
 function getGoalGeometry() {
     const W = M3.W, H = M3.H, cx = W/2;
-    const horizonY = H * 0.18;
-    const crossbarY = H * 0.28;
+    const horizonY = H * 0.18, crossbarY = H * 0.28, postBaseY = H * 0.84;
     const crossbarHalf = W * 0.45;
-    const postBaseY = H * 0.84;
-    const goalHeight = postBaseY - crossbarY;
-    const postBaseHalf = crossbarHalf - Math.tan(5 * Math.PI / 180) * goalHeight;
-
-    return { 
-        cx, horizonY, crossbarY, postBaseY,
-        tl: { x: cx - crossbarHalf, y: crossbarY },
-        tr: { x: cx + crossbarHalf, y: crossbarY },
-        bl: { x: cx - postBaseHalf, y: postBaseY },
-        br: { x: cx + postBaseHalf, y: postBaseY }
-    };
+    const postBaseHalf = crossbarHalf - Math.tan(5 * Math.PI / 180) * (postBaseY - crossbarY);
+    return { cx, horizonY, crossbarY, postBaseY, tl:{x:cx-crossbarHalf, y:crossbarY}, tr:{x:cx+crossbarHalf, y:crossbarY}, bl:{x:cx-postBaseHalf, y:postBaseY}, br:{x:cx+postBaseHalf, y:postBaseY} };
 }
 
 function drawScene(ball, impact) {
     const ctx = M3.ctx, g = getGoalGeometry();
-    
-    // Отрисовка стадиона
     if(stadiumImg.complete) {
-        const scale = Math.max(M3.W / stadiumImg.width, M3.H / stadiumImg.height);
-        const dW = stadiumImg.width * scale, dH = stadiumImg.height * scale;
-        ctx.drawImage(stadiumImg, (M3.W-dW)/2, (M3.H-dH)/2, dW, dH);
-    } else {
-        ctx.fillStyle = '#0b0f1a'; ctx.fillRect(0,0,M3.W,M3.H);
-    }
+        const scale = Math.max(M3.W/stadiumImg.width, M3.H/stadiumImg.height);
+        ctx.drawImage(stadiumImg, (M3.W-stadiumImg.width*scale)/2, (M3.H-stadiumImg.height*scale)/2, stadiumImg.width*scale, stadiumImg.height*scale);
+    } else { ctx.fillStyle = '#0b0f1a'; ctx.fillRect(0,0,M3.W,M3.H); }
 
-    // Вспышка попадания мяча
     if(impact) {
-        ctx.save();
-        ctx.shadowColor = 'rgba(0,229,255,1)'; ctx.shadowBlur = 40;
-        ctx.fillStyle = 'rgba(0,229,255,0.4)';
-        ctx.beginPath(); ctx.arc(impact.x, impact.y, 25, 0, 7); ctx.fill();
-        ctx.restore();
+        ctx.save(); ctx.shadowColor = 'rgba(0,229,255,1)'; ctx.shadowBlur = 40;
+        ctx.fillStyle = 'rgba(0,229,255,0.4)'; ctx.beginPath(); ctx.arc(impact.x, impact.y, 25, 0, 7); ctx.fill(); ctx.restore();
     }
 
-    /* БЕЛЫЕ ВОРОТА ОТКЛЮЧЕНЫ
-       Если нужно вернуть, просто убери комментарии ниже
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 6;
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(g.bl.x, g.bl.y); ctx.lineTo(g.tl.x, g.tl.y);
-    ctx.lineTo(g.tr.x, g.tr.y); ctx.lineTo(g.br.x, g.br.y);
-    ctx.stroke();
-    */
-
-    // Мяч (Градиент + Тень)
     if(ball) {
         const sz = ball.sz;
-        ctx.fillStyle = 'rgba(0,0,0,0.15)'; // Тень
-        ctx.beginPath(); ctx.ellipse(ball.x, ball.y + sz*0.4, sz*0.7, sz*0.2, 0, 0, 7); ctx.fill();
-        
-        const grad = ctx.createRadialGradient(ball.x - sz*0.25, ball.y - sz*0.25, sz*0.1, ball.x, ball.y, sz);
-        grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(0.6, '#e8e8e8');
-        grad.addColorStop(1, '#aaa');
-        
-        ctx.fillStyle = grad;
-        ctx.beginPath(); ctx.arc(ball.x, ball.y, sz, 0, 7); ctx.fill();
+        ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.ellipse(ball.x, ball.y + sz*0.4, sz*0.7, sz*0.2, 0, 0, 7); ctx.fill();
+        const grad = ctx.createRadialGradient(ball.x-sz*0.25, ball.y-sz*0.25, sz*0.1, ball.x, ball.y, sz);
+        grad.addColorStop(0, '#fff'); grad.addColorStop(1, '#aaa');
+        ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(ball.x, ball.y, sz, 0, 7); ctx.fill();
     }
 }
 
@@ -253,29 +251,17 @@ function nextRound() {
     if(currentRound >= MAX_ROUNDS) {
         document.getElementById('waitingScreen').style.display = 'flex';
         conn.send({ type: 'FULL_RESULTS', results: myResults });
-        checkFinal();
-        return;
+        checkFinal(); return;
     }
     document.getElementById('dot'+currentRound).classList.add('current');
     spaceTime = null; firstDir = null; waiting = false;
-    
-    const g = getGoalGeometry();
-    drawScene({ x: g.cx, y: g.horizonY + 20, sz: 6 });
-
-    setTimeout(() => { 
-        signalTime = performance.now(); 
-        waiting = true; 
-        animateBall(sequence[currentRound]); 
-    }, 1000 + Math.random()*1500);
+    setTimeout(() => { signalTime = performance.now(); waiting = true; animateBall(sequence[currentRound]); }, 1000 + Math.random()*1500);
 }
 
 function animateBall(type) {
     const g = getGoalGeometry();
     roundNeedsSpace = !type.startsWith('OUT');
-    
-    const goalW = g.tr.x - g.tl.x;
-    const goalH = g.postBaseY - g.crossbarY;
-
+    const goalW = g.tr.x - g.tl.x, goalH = g.postBaseY - g.crossbarY;
     const targets = {
         'A': {x: g.tl.x + goalW*0.08, y: g.crossbarY + goalH*0.55},
         'D': {x: g.tr.x - goalW*0.08, y: g.crossbarY + goalH*0.55},
@@ -284,70 +270,44 @@ function animateBall(type) {
         'OUT_LEFT': {x: g.tl.x - 50, y: g.crossbarY + goalH*0.3},
         'OUT_RIGHT': {x: g.tr.x + 50, y: g.crossbarY + goalH*0.3}
     };
-
-    const end = targets[type];
-    const startX = g.cx, startY = g.horizonY + 20;
-    const startT = performance.now();
-    const duration = 700; 
-
+    const end = targets[type], startT = performance.now();
     const frame = (now) => {
-        let t = (now - startT) / duration; 
-        if(t > 1) t = 1;
-        
+        let t = (now - startT) / 700; if(t > 1) t = 1;
         const ease = 1 - Math.pow(1 - t, 3);
-        const x = startX + (end.x - startX) * ease;
-        const y = startY + (end.y - startY) * ease;
-        const sz = 5 + (22 - 5) * ease;
-
-        drawScene({x, y, sz}, !roundNeedsSpace ? end : null);
-
-        if(t < 1 && waiting) {
-            m3AnimFrame = requestAnimationFrame(frame);
-        } else if (!roundNeedsSpace) {
-            setTimeout(() => { if(waiting) endR(true); }, 900);
-        }
+        const x = g.cx + (end.x - g.cx) * ease, y = (g.horizonY+20) + (end.y - (g.horizonY+20)) * ease;
+        drawScene({x, y, sz: 5 + 17 * ease}, !roundNeedsSpace?end:null);
+        if(t < 1 && waiting) m3AnimFrame = requestAnimationFrame(frame);
+        else if(!roundNeedsSpace) setTimeout(() => { if(waiting) endR(true); }, 900);
     };
     m3AnimFrame = requestAnimationFrame(frame);
 }
 
 function endR(auto = false) {
-    if(!waiting) return; 
-    waiting = false;
+    if(!waiting) return; waiting = false;
     if(m3AnimFrame) cancelAnimationFrame(m3AnimFrame);
-
     const target = sequence[currentRound];
     let ok = false;
-    if(!roundNeedsSpace) ok = auto; 
+    if(!roundNeedsSpace) ok = auto;
     else ok = !auto && firstDir === target;
-
     const rt = (ok && roundNeedsSpace) ? Math.round(spaceTime - signalTime) : null;
     myResults.push({ ok, rt, target, spaceRel: spaceTime ? spaceTime - signalTime : null });
-    
     document.getElementById('dot'+currentRound).className = 'dot ' + (ok?'success':'fail');
     document.getElementById('info').innerHTML = ok ? '<span style="color:var(--success)">ВЕРНО</span>' : '<span style="color:var(--fail)">ОШИБКА</span>';
-    
-    currentRound++;
-    setTimeout(nextRound, 1000);
+    currentRound++; setTimeout(nextRound, 1000);
 }
 
 window.addEventListener('keydown', e => {
     if(!waiting || e.repeat) return;
     if(['KeyA','KeyD','KeyW'].includes(e.code)) firstDir = e.code.replace('Key','');
-    if(e.code === 'Space') { 
-        spaceTime = performance.now(); 
-        endR(false); 
-    }
+    if(e.code === 'Space') { spaceTime = performance.now(); endR(false); }
 });
 
 function checkFinal() {
     if(myResults.length < MAX_ROUNDS || opponentResults.length < MAX_ROUNDS) return;
-    
     document.getElementById('waitingScreen').style.display = 'none';
     document.getElementById('mode3Area').style.display = 'none';
     document.getElementById('resultsOverlay').style.display = 'flex';
-    
     let myS = 0, oppS = 0, html = '';
-    
     for(let i=0; i<MAX_ROUNDS; i++) {
         const my = myResults[i], opp = opponentResults[i];
         let status = 'draw';
@@ -355,29 +315,10 @@ function checkFinal() {
         else if(!my.ok && opp.ok) { oppS++; status = 'loss'; }
         else if(my.ok && opp.ok && my.rt !== null) {
             if(my.rt < opp.rt) { myS++; status = 'win'; }
-            else if (opp.rt < my.rt) { oppS++; status = 'loss'; }
+            else if(opp.rt < my.rt) { oppS++; status = 'loss'; }
         }
-
-        html += `
-        <div class="mini-card ${status}">
-            <div class="mini-row">
-                <span style="font-weight:700">#${i+1} <span class="mini-label">${my.target}</span></span>
-                <span style="color:${status==='win'? 'var(--success)': status==='loss'?'var(--fail)':'#888'}">
-                    ${status==='win'?'ВЫ +1':status==='loss'?'ДРУГ +1':'—'}
-                </span>
-            </div>
-            <div class="mini-row">
-                <span class="mini-label">Вы: ${my.ok ? (my.rt?my.rt+'ms':'OK') : 'ERR'}</span>
-                <span class="mini-label">Друг: ${opp.ok ? (opp.rt?opp.rt+'ms':'OK') : 'ERR'}</span>
-            </div>
-            <div class="mini-timeline">
-                <div class="m-marker m-sig" style="left:15%"></div>
-                ${my.spaceRel ? `<div class="m-marker m-me" style="left:${15 + my.spaceRel/12}%\"></div>` : ''}
-                ${opp.spaceRel ? `<div class="m-marker m-opp" style="left:${15 + opp.spaceRel/12}%\"></div>` : ''}
-            </div>
-        </div>`;
+        html += `<div class="mini-card ${status}"><div class="mini-row"><b>#${i+1} ${my.target}</b> <span style="color:${status==='win'?'var(--success)':status==='loss'?'var(--fail)':'#888'}">${status==='win'?'ВЫ +1':status==='loss'?'ДРУГ +1':'—'}</span></div><div class="mini-row" style="font-size:12px; color:#888"><span>Вы: ${my.ok?(my.rt?my.rt+'ms':'OK'):'ERR'}</span><span>Друг: ${opp.ok?(opp.rt?opp.rt+'ms':'OK'):'ERR'}</span></div><div class="mini-timeline"><div class="m-marker m-sig" style="left:15%"></div>${my.spaceRel?`<div class="m-marker m-me" style="left:${15+my.spaceRel/12}%"></div>`:''}${opp.spaceRel?`<div class="m-marker m-opp" style="left:${15+opp.spaceRel/12}%"></div>`:''}</div></div>`;
     }
-    
     document.getElementById('finalScore').innerText = `${myS} : ${oppS}`;
     document.getElementById('winText').innerText = myS > oppS ? "ПОБЕДА!" : (myS < oppS ? "ПОРАЖЕНИЕ" : "НИЧЬЯ");
     document.getElementById('statsList').innerHTML = html;
