@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GK Duel 3D - Settings Edition</title>
+<title>GK Duel 3D - Final Fix</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -13,32 +13,24 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
   --accent:#00e5ff;--purple:#7c4dff;--bg:#0a0a0f;--card:#14141f;
   --border:#1e1e2e;--success:#00e676;--fail:#ff3d71;--warn:#ffab00;
 }
-
-/* Экраны */
 #menu, #lobby, #resultsOverlay, #waitingScreen, #setupMenu {
   position:fixed;inset:0;background:var(--bg);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:1000;
 }
 #waitingScreen { z-index: 1500; background: rgba(10,10,15,0.9); display: none; }
 #setupMenu { display: none; }
-
 h1 { font-size:36px; font-weight:900; background:linear-gradient(135deg,var(--accent),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-
 .menu-btn {
   padding:14px 28px;font-size:16px;font-weight:700;
   border:2px solid var(--border);border-radius:12px;background:var(--card);color:#fff;
   cursor:pointer;transition:all .2s;min-width:260px; text-align:center;
 }
 .menu-btn:hover{border-color:var(--accent);transform:translateY(-2px)}
-
-/* Слайдеры */
 .settings-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px; width:400px; max-width:90vw; }
 .slider-row { margin-bottom: 20px; }
 .slider-row label { display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px; color:#aaa; }
 .slider-row b { color: var(--accent); }
 input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--accent); }
-
-/* Игра */
 #mode3Area { position:fixed; inset:0; display:none; overflow:hidden; z-index:40; }
 #mode3Canvas { width:100%; height:100%; display:block; }
 #hud { position:fixed; top:16px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:50; }
@@ -46,8 +38,6 @@ input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--accent);
 .dot.success { background:var(--success); border-color:var(--success); box-shadow:0 0 8px var(--success); }
 .dot.fail { background:var(--fail); border-color:var(--fail); box-shadow:0 0 8px var(--fail); }
 .dot.current { border-color:var(--accent); box-shadow:0 0 8px var(--accent); }
-
-/* Статистика */
 #resultsOverlay { display:none; z-index:2000; padding: 20px 10px; flex-direction: column; }
 .results-container { width: 100%; max-width: 500px; background: var(--card); border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; max-height: 85vh; overflow: hidden; }
 .results-header { padding: 20px; text-align: center; border-bottom: 1px solid var(--border); }
@@ -62,7 +52,6 @@ input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--accent);
 .m-sig { background: #fff; }
 .m-me { background: var(--accent); z-index: 2; }
 .m-opp { background: var(--fail); opacity: 0.6; }
-
 input[type="text"] { padding:10px; border-radius:8px; border:1px solid var(--border); background:#1a1a2e; color:#fff; text-align:center; width:220px; }
 </style>
 </head>
@@ -146,7 +135,6 @@ let signalTime = 0, spaceTime = null, firstDir = null, waiting = false;
 let roundNeedsSpace = false;
 let m3AnimFrame = null;
 
-// --- ЛОГИКА НАСТРОЕК ---
 function openSetup() {
     document.getElementById('menu').style.display = 'none';
     document.getElementById('setupMenu').style.display = 'flex';
@@ -163,18 +151,19 @@ function updatePercents() {
 }
 [rOut, rSide, rCenter].forEach(r => r.addEventListener('input', updatePercents));
 
-// --- ОБНОВЛЕННАЯ СЕТЕВАЯ ЧАСТЬ ---
+// --- ОБНОВЛЕННАЯ СЕТЕВАЯ ЛОГИКА (ФИНАЛЬНЫЙ ФИКС) ---
 function showLobby(mode) {
     document.getElementById('menu').style.display = 'none';
     document.getElementById('setupMenu').style.display = 'none';
     document.getElementById('lobby').style.display = 'flex';
-    document.getElementById('statusTitle').innerText = "Подключение к серверу...";
-    document.getElementById('idArea').style.display = 'none';
-    document.getElementById('joinArea').style.display = 'none';
+    document.getElementById('statusTitle').innerText = "Поиск сервера...";
 
-    // Инициализация с STUN серверами для обхода NAT и Firewall
+    // Использование альтернативного сервера и порта для обхода 403 ошибки
     peer = new Peer(undefined, {
-        debug: 2,
+        host: '0.peerjs.com',
+        port: 443,
+        secure: true,
+        debug: 3,
         config: {
             'iceServers': [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -192,19 +181,16 @@ function showLobby(mode) {
 
     peer.on('error', err => {
         console.error('PeerJS Error:', err.type);
-        let msg = "Ошибка подключения";
-        if (err.type === 'network') msg = "СЕТЬ: Ошибка CORS или сервера";
-        if (err.type === 'browser-incompatible') msg = "БРАУЗЕР: Не поддерживается";
-        if (err.type === 'server-error') msg = "СЕРВЕР: Ошибка PeerJS";
-        
-        document.getElementById('statusTitle').innerHTML = `<span style="color:var(--fail)">${msg}</span><br><small style="font-size:12px;color:#555">Запустите через GitHub Pages!</small>`;
+        document.getElementById('statusTitle').innerHTML = `<span style="color:var(--fail)">ОШИБКА СЕРВЕРА</span><br><small style="font-size:12px;color:#888">Попробуйте обновить страницу через 5 секунд</small>`;
     });
 
     peer.on('connection', c => { conn = c; setupConn(); });
 }
 
 function connectToPeer() {
-    conn = peer.connect(document.getElementById('peerIdInput').value);
+    const targetId = document.getElementById('peerIdInput').value.trim();
+    if(!targetId) return;
+    conn = peer.connect(targetId);
     setupConn();
 }
 
@@ -228,7 +214,6 @@ function setupConn() {
     });
 }
 
-// --- ВИЗУАЛ И МЕХАНИКА ---
 function startDuel() {
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('mode3Area').style.display = 'block';
@@ -236,7 +221,6 @@ function startDuel() {
     M3.ctx = M3.canvas.getContext('2d');
     const resize = () => { M3.W = M3.canvas.width = window.innerWidth; M3.H = M3.canvas.height = window.innerHeight; };
     window.addEventListener('resize', resize); resize();
-    
     let h = ''; for(let i=0; i<MAX_ROUNDS; i++) h += `<div class="dot" id="dot${i}"></div>`;
     document.getElementById('hud').innerHTML = h;
     nextRound();
@@ -256,12 +240,10 @@ function drawScene(ball, impact) {
         const scale = Math.max(M3.W/stadiumImg.width, M3.H/stadiumImg.height);
         ctx.drawImage(stadiumImg, (M3.W-stadiumImg.width*scale)/2, (M3.H-stadiumImg.height*scale)/2, stadiumImg.width*scale, stadiumImg.height*scale);
     } else { ctx.fillStyle = '#0b0f1a'; ctx.fillRect(0,0,M3.W,M3.H); }
-
     if(impact) {
         ctx.save(); ctx.shadowColor = 'rgba(0,229,255,1)'; ctx.shadowBlur = 40;
         ctx.fillStyle = 'rgba(0,229,255,0.4)'; ctx.beginPath(); ctx.arc(impact.x, impact.y, 25, 0, 7); ctx.fill(); ctx.restore();
     }
-
     if(ball) {
         const sz = ball.sz;
         ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.ellipse(ball.x, ball.y + sz*0.4, sz*0.7, sz*0.2, 0, 0, 7); ctx.fill();
