@@ -163,18 +163,43 @@ function updatePercents() {
 }
 [rOut, rSide, rCenter].forEach(r => r.addEventListener('input', updatePercents));
 
-// --- СЕТЕВАЯ ЧАСТЬ ---
+// --- ОБНОВЛЕННАЯ СЕТЕВАЯ ЧАСТЬ ---
 function showLobby(mode) {
     document.getElementById('menu').style.display = 'none';
     document.getElementById('setupMenu').style.display = 'none';
     document.getElementById('lobby').style.display = 'flex';
-    peer = new Peer();
+    document.getElementById('statusTitle').innerText = "Подключение к серверу...";
+    document.getElementById('idArea').style.display = 'none';
+    document.getElementById('joinArea').style.display = 'none';
+
+    // Инициализация с STUN серверами для обхода NAT и Firewall
+    peer = new Peer(undefined, {
+        debug: 2,
+        config: {
+            'iceServers': [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        }
+    });
+
     peer.on('open', id => {
         document.getElementById('myId').value = id;
         document.getElementById('statusTitle').innerText = mode === 'create' ? "ВАШ ID:" : "ВВЕДИТЕ ID ДРУГА:";
         if(mode === 'create') { isHost = true; document.getElementById('idArea').style.display = 'block'; }
         else document.getElementById('joinArea').style.display = 'block';
     });
+
+    peer.on('error', err => {
+        console.error('PeerJS Error:', err.type);
+        let msg = "Ошибка подключения";
+        if (err.type === 'network') msg = "СЕТЬ: Ошибка CORS или сервера";
+        if (err.type === 'browser-incompatible') msg = "БРАУЗЕР: Не поддерживается";
+        if (err.type === 'server-error') msg = "СЕРВЕР: Ошибка PeerJS";
+        
+        document.getElementById('statusTitle').innerHTML = `<span style="color:var(--fail)">${msg}</span><br><small style="font-size:12px;color:#555">Запустите через GitHub Pages!</small>`;
+    });
+
     peer.on('connection', c => { conn = c; setupConn(); });
 }
 
@@ -186,7 +211,6 @@ function connectToPeer() {
 function setupConn() {
     conn.on('open', () => {
         if(isHost) {
-            // Генерируем последовательность на основе настроек
             sequence = [];
             for(let i=0; i<MAX_ROUNDS; i++) {
                 let r = Math.random()*100;
