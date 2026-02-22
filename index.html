@@ -13,47 +13,40 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
   --border:#1e1e2e;--success:#00e676;--fail:#ff3d71;--warn:#ffab00;
 }
 
-/* ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА */
-#langSelector{
-  position:fixed;top:16px;left:16px;z-index:1100;
-}
-#langMainBtn{
-  padding:10px 16px;background:var(--card);border:1px solid var(--border);
-  color:#fff;border-radius:8px;cursor:pointer;font-weight:700;transition:all 0.2s;
-}
-#langOptions{
-  display:none;flex-direction:column;gap:4px;margin-top:4px;
-  background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;
-}
-#langOptions button{
-  padding:10px;background:transparent;border:none;color:#fff;cursor:pointer;font-family:inherit;text-align:left;
-}
+#langSelector{ position:fixed;top:16px;left:16px;z-index:1100; }
+#langMainBtn{ padding:10px 16px;background:var(--card);border:1px solid var(--border); color:#fff;border-radius:8px;cursor:pointer;font-weight:700;transition:all 0.2s; }
+#langOptions{ display:none;flex-direction:column;gap:4px;margin-top:4px; background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden; }
+#langOptions button{ padding:10px;background:transparent;border:none;color:#fff;cursor:pointer;font-family:inherit;text-align:left; }
 #langOptions button:hover{background:rgba(255,255,255,0.1);color:var(--accent)}
 
-/* КНОПКА ПАУЗЫ */
-#pauseBtn{
-  position:fixed;top:16px;left:16px;z-index:100;
-  padding:10px 20px;background:rgba(20,20,31,0.8);border:1px solid var(--border);
-  color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:none;
-  backdrop-filter:blur(4px);transition:all 0.2s;
+.control-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  padding: 8px 16px;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
 }
-#pauseBtn:hover{border-color:var(--accent);color:var(--accent)}
+.switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 24px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent); }
+input:checked + .slider:before { transform: translateX(26px); }
+.control-label { font-size: 14px; font-weight: 700; color: #888; transition: color 0.2s; }
+.control-label.active { color: #fff; }
 
-#pauseOverlay{
-  position:fixed;inset:0;background:rgba(10,10,15,0.85);z-index:1500;
-  display:none;flex-direction:column;align-items:center;justify-content:center;gap:15px;
-  backdrop-filter:blur(8px);
-}
+#pauseBtn{ position:fixed;top:16px;left:16px;z-index:100; padding:10px 20px;background:rgba(20,20,31,0.8);border:1px solid var(--border); color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:none; backdrop-filter:blur(4px);transition:all 0.2s; }
+#pauseBtn:hover{border-color:var(--accent);color:var(--accent)}
+#pauseOverlay{ position:fixed;inset:0;background:rgba(10,10,15,0.85);z-index:1500; display:none;flex-direction:column;align-items:center;justify-content:center;gap:15px; backdrop-filter:blur(8px); }
 
 #menu{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:1000}
 #menu h1{font-size:42px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 #menu p{color:#888;font-size:14px;max-width:420px;text-align:center;line-height:1.6;padding:0 20px}
 
-.menu-btn{
-  padding:16px 36px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700;
-  border:2px solid var(--border);border-radius:12px;background:var(--card);color:#fff;
-  cursor:pointer;transition:all .2s;min-width:280px;
-}
+.menu-btn{ padding:16px 36px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700; border:2px solid var(--border);border-radius:12px;background:var(--card);color:#fff; cursor:pointer;transition:all .2s;min-width:280px; }
 .menu-btn:hover{border-color:var(--accent);box-shadow:0 0 24px rgba(0,229,255,.15);transform:translateY(-2px)}
 .menu-btn span{color:#888;font-weight:300;font-size:14px;display:block;margin-top:4px}
 
@@ -70,14 +63,7 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 .dot.fail{background:var(--fail);border-color:var(--fail);box-shadow:0 0 8px var(--fail)}
 .dot.current{border-color:var(--accent);box-shadow:0 0 8px var(--accent)}
 
-#info{
-  position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
-  text-align:center;font-size:24px;font-family:'JetBrains Mono',monospace;font-weight:700;
-  color:#fff;z-index:100;pointer-events:none;background:rgba(0, 0, 0, 0.7);
-  padding:12px 28px;border-radius:50px;backdrop-filter:blur(6px);
-  border:1px solid rgba(255, 255, 255, 0.15);box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  transition: all 0.2s ease;opacity:0;
-}
+#info{ position:fixed;bottom:40px;left:50%;transform:translateX(-50%); text-align:center;font-size:24px;font-family:'JetBrains Mono',monospace;font-weight:700; color:#fff;z-index:100;pointer-events:none;background:rgba(0, 0, 0, 0.7); padding:12px 28px;border-radius:50px;backdrop-filter:blur(6px); border:1px solid rgba(255, 255, 255, 0.15);box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.2s ease;opacity:0; }
 
 #resultsOverlay{position:fixed;inset:0;background:rgba(10,10,15,.97);z-index:2000;display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 20px}
 #resultsOverlay.show{display:flex}
@@ -105,17 +91,9 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 .tl-prezone{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.03);z-index:1;border-right:1px dashed rgba(255,255,255,.12)}
 
 .btn-row{display:flex;flex-direction:column;align-items:center;margin-top:32px;gap:10px;padding-bottom:40px}
-.restart-btn{
-  padding:16px 48px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700;
-  border:2px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent);
-  cursor:pointer;transition:all .2s;
-}
+.restart-btn{ padding:16px 48px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700; border:2px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent); cursor:pointer;transition:all .2s; }
 .restart-btn:hover{background:var(--accent);color:#000}
-.back-btn{
-  padding:12px 32px;font-size:14px;font-family:'Outfit',sans-serif;font-weight:500;
-  border:1px solid var(--border);border-radius:8px;background:transparent;color:#888;
-  cursor:pointer;transition:all .2s;
-}
+.back-btn{ padding:12px 32px;font-size:14px;font-family:'Outfit',sans-serif;font-weight:500; border:1px solid var(--border);border-radius:8px;background:transparent;color:#888; cursor:pointer;transition:all .2s; }
 .back-btn:hover{border-color:#888;color:#fff}
 
 #mode3Area{position:fixed;inset:0;display:none;overflow:hidden;z-index:40}
@@ -125,7 +103,6 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 .sliderRow input{width:100%}
 </style>
 </head>
-
 <body>
 
 <div id="langSelector">
@@ -169,6 +146,20 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 <div id="menu">
   <h1>GK Reaction Test</h1>
   <p id="menuDesc">Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. Направление должно быть нажато до или одновременно с прыжком.</p>
+  
+  <div class="control-toggle">
+    <span class="control-label active" id="labelKbd">Клавиатура</span>
+    <label class="switch">
+      <input type="checkbox" id="gamepadToggle">
+      <span class="slider"></span>
+    </label>
+    <span class="control-label" id="labelPad">Геймпад</span>
+  </div>
+  
+  <div id="gamepadHint" style="color:var(--warn); font-size:13px; font-weight:700; margin-top:-10px; opacity:0; transition:0.3s; display:none;">
+    ⚠️ Подключите геймпад и нажмите любую кнопку
+  </div>
+
   <button class="menu-btn" id="mode1">Режим 1 — Сигнал<span id="m1Sub">Сторона подсвечивается</span></button>
   <button class="menu-btn" id="mode2">Режим 2 — Мяч<span id="m2Sub">Мяч летит в угол</span></button>
   <button class="menu-btn" id="mode3btn">Режим 3 — Ворота 3D<span id="m3Sub">удары по воротам · 15 раундов</span></button>
@@ -191,10 +182,10 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 </div>
 
 <script>
-// ЛОКАЛИЗАЦИЯ
 const i18n = {
   ru: {
     menuDesc: "Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. Направление должно быть нажато до или одновременно с прыжком.",
+    menuDescPad: "Используй <b>Левый Стик</b> для стороны, затем <b>Кнопку X (A)</b> чтобы прыгнуть. Направление должно быть выбрано до прыжка.",
     mode1: "Режим 1 — Сигнал", m1Sub: "Сторона подсвечивается",
     mode2: "Режим 2 — Мяч", m2Sub: "Мяч летит в угол",
     mode3: "Режим 3 — Ворота 3D", m3Sub: "удары по воротам · 15 раундов",
@@ -202,12 +193,15 @@ const i18n = {
     settings: "Настройка ударов", labelOut: "Мимо ворот", labelSide: "В створ (углы)", labelCenter: "По центру", startMode: "Запустить режим",
     results: "Результаты", avgReaction: "Средняя реакция", restart: "Играть снова",
     round: "Раунд", goal: "Цель", ms: "мс",
-    errSpaceOnly: "SPACE без направления", errEarlySpace: "SPACE раньше направления", errWrongSide: "Неверная сторона", errNoJump: "Не прыгнул!", errJumpOnOut: "Мяч мимо — не прыгай!",
+    errSpaceOnly: "Прыжок без направления", errEarlySpace: "Прыжок раньше направления", errWrongSide: "Неверная сторона", errNoJump: "Не прыгнул!", errJumpOnOut: "Мяч мимо — не прыгай!",
     okOut: "Мяч мимо — верно!", okLabel: "Верно",
-    tL: "← Левый угол", tR: "→ Правый угол", tC: "↑ Центр ворот", tOT: "⬆ Над воротами", tOL: "⬅ Слева от ворот", tOR: "➡ Справа от ворот"
+    tL: "← Левый угол", tR: "→ Правый угол", tC: "↑ Центр ворот", tOT: "⬆ Над воротами", tOL: "⬅ Слева от ворот", tOR: "➡ Справа от ворот",
+    kbd: "Клавиатура", pad: "Геймпад",
+    gpHint: "⚠️ Подключите геймпад и нажмите любую кнопку"
   },
   en: {
     menuDesc: "Press <b>A</b> or <b>D</b> to choose side, then <b>SPACE</b> to jump. Direction must be pressed before or at the same time as jump.",
+    menuDescPad: "Use <b>Left Stick</b> for side, then <b>Button X (A)</b> to jump. Direction must be selected before jump.",
     mode1: "Mode 1 — Signal", m1Sub: "Side highlight",
     mode2: "Mode 2 — Ball", m2Sub: "Ball flies to corner",
     mode3: "Mode 3 — 3D Goals", m3Sub: "shots on goal · 15 rounds",
@@ -215,23 +209,21 @@ const i18n = {
     settings: "Shot Settings", labelOut: "Off-target", labelSide: "On-target (corners)", labelCenter: "Center", startMode: "Start Mode",
     results: "Results", avgReaction: "Average reaction", restart: "Restart",
     round: "Round", goal: "Target", ms: "ms",
-    errSpaceOnly: "SPACE without direction", errEarlySpace: "SPACE before direction", errWrongSide: "Wrong side", errNoJump: "No jump!", errJumpOnOut: "Off-target — don't jump!",
+    errSpaceOnly: "Jump without direction", errEarlySpace: "Jump before direction", errWrongSide: "Wrong side", errNoJump: "No jump!", errJumpOnOut: "Off-target — don't jump!",
     okOut: "Off-target — correct!", okLabel: "Correct",
-    tL: "← Left Corner", tR: "→ Right Corner", tC: "↑ Center", tOT: "⬆ Over Top", tOL: "⬅ Out Left", tOR: "➡ Out Right"
+    tL: "← Left Corner", tR: "→ Right Corner", tC: "↑ Center", tOT: "⬆ Over Top", tOL: "⬅ Out Left", tOR: "➡ Out Right",
+    kbd: "Keyboard", pad: "Gamepad",
+    gpHint: "⚠️ Connect gamepad and press any button"
   }
 };
 
 let curLang = 'ru';
-
-function toggleLangMenu() {
-  const opts = $('langOptions');
-  opts.style.display = opts.style.display === 'flex' ? 'none' : 'flex';
-}
+let useGamepad = false;
 
 function setLanguage(lang) {
   curLang = lang;
   const t = i18n[lang];
-  $('menuDesc').innerHTML = t.menuDesc;
+  $('menuDesc').innerHTML = useGamepad ? t.menuDescPad : t.menuDesc;
   $('mode1').firstChild.textContent = t.mode1; $('m1Sub').textContent = t.m1Sub;
   $('mode2').firstChild.textContent = t.mode2; $('m2Sub').textContent = t.m2Sub;
   $('mode3btn').firstChild.textContent = t.mode3; $('m3Sub').textContent = t.m3Sub;
@@ -240,10 +232,11 @@ function setLanguage(lang) {
   $('settingsTitle').textContent = t.settings; $('labelOut').textContent = t.labelOut;
   $('labelSide').textContent = t.labelSide; $('labelCenter').textContent = t.labelCenter;
   $('startMode3Sub').textContent = t.startMode;
+  $('labelKbd').textContent = t.kbd; $('labelPad').textContent = t.pad;
+  $('gamepadHint').textContent = t.gpHint;
   $('langOptions').style.display = 'none';
 }
 
-// ОСНОВНАЯ ЛОГИКА
 let mode3Chances = { out: 30, side: 50, center: 20 };
 const $=id=>document.getElementById(id);
 let mode=1,attempts=0,maxAttempts=5;
@@ -262,6 +255,114 @@ let roundNeedsSpace=false;
 let isPaused = false;
 let roundTimeout = null;
 let m3AnimFrame=null;
+
+// ГЕЙМПАД
+let gpPrevButton = false;
+
+function hideGamepadHint() {
+  const hint = $('gamepadHint');
+  if (hint.style.display !== 'none') {
+    hint.style.opacity = '0';
+    setTimeout(() => hint.style.display = 'none', 300);
+  }
+}
+
+function pollGamepadMenu() {
+  if (!useGamepad || $('menu').style.display === 'none') return;
+  const gps = navigator.getGamepads();
+  const gp = gps[0];
+  if (gp) {
+    // Проверяем, нажата ли любая кнопка
+    const anyBtn = gp.buttons.some(b => b.pressed);
+    if (anyBtn) hideGamepadHint();
+  }
+  requestAnimationFrame(pollGamepadMenu);
+}
+
+function pollGamepad() {
+  if (!useGamepad) return;
+  const gps = navigator.getGamepads();
+  const gp = gps[0];
+  if (!gp) return;
+  
+  // Если геймпад найден и мы в игре, тоже скрываем хинт на всякий случай
+  hideGamepadHint();
+
+  const now = performance.now();
+  const stickX = gp.axes[0];
+  const stickY = gp.axes[1];
+  const threshold = 0.5;
+  let currentGPDir = null;
+  if (stickX < -threshold) currentGPDir = 'KeyA';
+  else if (stickX > threshold) currentGPDir = 'KeyD';
+  else if (mode === 3 && stickY < -threshold) currentGPDir = 'KeyW';
+  const codes = ['KeyA', 'KeyD', 'KeyW'];
+  codes.forEach(c => {
+    if (currentGPDir === c) {
+      if (!allKeyDowns[c]) {
+        allKeyDowns[c] = now;
+        if (!firstDir && waiting) { firstDir = c.replace('Key',''); firstDirTime = now; }
+      }
+    } else {
+      if (allKeyDowns[c]) {
+        allKeySegments.push({code:c, down:allKeyDowns[c], up:now});
+        delete allKeyDowns[c];
+      }
+    }
+  });
+  const btnPressed = gp.buttons[0].pressed;
+  if (btnPressed && !gpPrevButton) { handleJump(now); }
+  gpPrevButton = btnPressed;
+  if (recording) requestAnimationFrame(pollGamepad);
+}
+
+function handleJump(now) {
+  if (!recording || isPaused) return;
+  allSpacePresses.push(now);
+  if (mode === 3 && waiting) {
+    spaceTime = now; m3SpacePressed = true;
+    if (!firstDir) {
+      if (allKeyDowns['KeyA']) {firstDir='A'; firstDirTime=allKeyDowns['KeyA'];}
+      else if (allKeyDowns['KeyD']) {firstDir='D'; firstDirTime=allKeyDowns['KeyD'];}
+      else if (allKeyDowns['KeyW']) {firstDir='W'; firstDirTime=allKeyDowns['KeyW'];}
+    }
+    waiting = false; recording = false; if (m3TimeoutId) clearTimeout(m3TimeoutId);
+    finalizeKeys(now); evaluateMode3(); return;
+  }
+  if (waiting && !spaceTime) {
+    spaceTime = now;
+    if (!firstDir) {
+      if (allKeyDowns['KeyA']) {firstDir='A'; firstDirTime=allKeyDowns['KeyA'];}
+      else if (allKeyDowns['KeyD']) {firstDir='D'; firstDirTime=allKeyDowns['KeyD'];}
+    }
+    waiting = false; recording = false; finalizeKeys(now); evaluate();
+  }
+}
+
+// ПЕРЕКЛЮЧАТЕЛЬ
+$('gamepadToggle').onchange = (e) => {
+  useGamepad = e.target.checked;
+  $('labelKbd').classList.toggle('active', !useGamepad);
+  $('labelPad').classList.toggle('active', useGamepad);
+  $('menuDesc').innerHTML = useGamepad ? i18n[curLang].menuDescPad : i18n[curLang].menuDesc;
+  
+  const hint = $('gamepadHint');
+  if (useGamepad) {
+    hint.style.display = 'block';
+    setTimeout(() => {
+        hint.style.opacity = '1';
+        pollGamepadMenu(); // Запускаем опрос в меню
+    }, 10);
+  } else {
+    hint.style.opacity = '0';
+    setTimeout(() => hint.style.display = 'none', 300);
+  }
+};
+
+function toggleLangMenu() {
+  const opts = $('langOptions');
+  opts.style.display = opts.style.display === 'flex' ? 'none' : 'flex';
+}
 
 function togglePause() {
   if (attempts >= maxAttempts) return;
@@ -422,11 +523,11 @@ function startRound(){
   $('left').classList.remove('active');$('right').classList.remove('active');
   $('ball').style.display = 'none'; $('info').style.opacity = '0'; 
   firstDir = null; firstDirTime = null; spaceTime = null; allKeySegments = []; allSpacePresses = [];
-
   if(mode===3){
     if(m3AnimFrame) cancelAnimationFrame(m3AnimFrame);
     showIdleBall(); roundStartTime = performance.now(); recording = true; waiting = false;
     m3SpacePressed = false; roundNeedsSpace = false;
+    if (useGamepad) pollGamepad();
     roundTimeout = setTimeout(()=>{
       target = getRandomMode3Target(); signalTime = performance.now(); waiting = true;
       animateBallMode3(target, ()=>{
@@ -439,8 +540,8 @@ function startRound(){
     }, Math.random()*1500 + 600);
     return;
   }
-
   roundStartTime = performance.now(); recording = true; waiting = false;
+  if (useGamepad) pollGamepad();
   roundTimeout = setTimeout(()=>{
     target = Math.random()<.5 ? 'A' : 'D'; signalTime = performance.now(); waiting = true;
     if(mode===1) $(target==='A'?'left':'right').classList.add('active');
@@ -454,33 +555,13 @@ function startRound(){
 }
 
 document.addEventListener('keydown',e=>{
-  if(!recording || e.repeat || isPaused)return;
+  if(!recording || e.repeat || isPaused || useGamepad)return;
   const now=performance.now(), code=e.code;
   if((code==='KeyA'||code==='KeyD'||(code==='KeyW'&&mode===3))&&!allKeyDowns[code]){
     allKeyDowns[code]=now;
     if(!firstDir&&waiting){ firstDir=code.replace('Key',''); firstDirTime=now; }
   }
-  if(code==='Space'){
-    allSpacePresses.push(now);
-    if(mode===3&&waiting){
-      spaceTime=now; m3SpacePressed=true;
-      if(!firstDir){
-        if(allKeyDowns['KeyA']) {firstDir='A'; firstDirTime=allKeyDowns['KeyA'];}
-        else if(allKeyDowns['KeyD']) {firstDir='D'; firstDirTime=allKeyDowns['KeyD'];}
-        else if(allKeyDowns['KeyW']) {firstDir='W'; firstDirTime=allKeyDowns['KeyW'];}
-      }
-      waiting=false; recording=false; if(m3TimeoutId)clearTimeout(m3TimeoutId);
-      finalizeKeys(now); evaluateMode3(); return;
-    }
-    if(waiting&&!spaceTime){
-      spaceTime=now;
-      if(!firstDir){
-        if(allKeyDowns['KeyA']) {firstDir='A'; firstDirTime=allKeyDowns['KeyA'];}
-        else if(allKeyDowns['KeyD']) {firstDir='D'; firstDirTime=allKeyDowns['KeyD'];}
-      }
-      waiting=false; recording=false; finalizeKeys(now); evaluate();
-    }
-  }
+  if(code==='Space') handleJump(now);
 });
 
 document.addEventListener('keyup',e=>{ if(allKeyDowns[e.code]){ allKeySegments.push({code:e.code,down:allKeyDowns[e.code],up:performance.now()}); delete allKeyDowns[e.code]; }});
