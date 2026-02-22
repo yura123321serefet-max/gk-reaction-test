@@ -13,9 +13,42 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
   --border:#1e1e2e;--success:#00e676;--fail:#ff3d71;--warn:#ffab00;
 }
 
+/* ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА */
+#langSelector{
+  position:fixed;top:16px;left:16px;z-index:1100;
+}
+#langMainBtn{
+  padding:10px 16px;background:var(--card);border:1px solid var(--border);
+  color:#fff;border-radius:8px;cursor:pointer;font-weight:700;transition:all 0.2s;
+}
+#langOptions{
+  display:none;flex-direction:column;gap:4px;margin-top:4px;
+  background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;
+}
+#langOptions button{
+  padding:10px;background:transparent;border:none;color:#fff;cursor:pointer;font-family:inherit;text-align:left;
+}
+#langOptions button:hover{background:rgba(255,255,255,0.1);color:var(--accent)}
+
+/* КНОПКА ПАУЗЫ */
+#pauseBtn{
+  position:fixed;top:16px;left:16px;z-index:100;
+  padding:10px 20px;background:rgba(20,20,31,0.8);border:1px solid var(--border);
+  color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:none;
+  backdrop-filter:blur(4px);transition:all 0.2s;
+}
+#pauseBtn:hover{border-color:var(--accent);color:var(--accent)}
+
+#pauseOverlay{
+  position:fixed;inset:0;background:rgba(10,10,15,0.85);z-index:1500;
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:15px;
+  backdrop-filter:blur(8px);
+}
+
 #menu{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:1000}
 #menu h1{font-size:42px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-#menu p{color:#888;font-size:14px;max-width:420px;text-align:center;line-height:1.6}
+#menu p{color:#888;font-size:14px;max-width:420px;text-align:center;line-height:1.6;padding:0 20px}
+
 .menu-btn{
   padding:16px 36px;font-size:18px;font-family:'Outfit',sans-serif;font-weight:700;
   border:2px solid var(--border);border-radius:12px;background:var(--card);color:#fff;
@@ -31,33 +64,19 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 #right.active{background:var(--accent)}
 
 #ball{position:absolute;width:36px;height:36px;border-radius:50%;background:#fff;left:50%;top:0%;transform:translate(-50%,0%);display:none;box-shadow:0 0 20px rgba(255,255,255,.5);z-index:10}
-
 #hud{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:50;flex-wrap:wrap;justify-content:center;max-width:90vw}
 .dot{width:14px;height:14px;border-radius:50%;border:2px solid #333;transition:all .3s}
 .dot.success{background:var(--success);border-color:var(--success);box-shadow:0 0 8px var(--success)}
 .dot.fail{background:var(--fail);border-color:var(--fail);box-shadow:0 0 8px var(--fail)}
 .dot.current{border-color:var(--accent);box-shadow:0 0 8px var(--accent)}
 
-/* УЛУЧШЕННЫЙ ИНФО-БЛОК ДЛЯ ВИДИМОСТИ НА ТРАВЕ */
 #info{
-  position:fixed;
-  bottom:40px;
-  left:50%;
-  transform:translateX(-50%);
-  text-align:center;
-  font-size:24px;
-  font-family:'JetBrains Mono',monospace;
-  font-weight:700;
-  color:#fff;
-  z-index:100;
-  pointer-events:none;
-  background:rgba(0, 0, 0, 0.7); /* Темная контрастная подложка */
-  padding:12px 28px;
-  border-radius:50px;
-  backdrop-filter:blur(6px);
-  border:1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  transition: all 0.2s ease;
+  position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
+  text-align:center;font-size:24px;font-family:'JetBrains Mono',monospace;font-weight:700;
+  color:#fff;z-index:100;pointer-events:none;background:rgba(0, 0, 0, 0.7);
+  padding:12px 28px;border-radius:50px;backdrop-filter:blur(6px);
+  border:1px solid rgba(255, 255, 255, 0.15);box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;opacity:0;
 }
 
 #resultsOverlay{position:fixed;inset:0;background:rgba(10,10,15,.97);z-index:2000;display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 20px}
@@ -76,8 +95,6 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 .timeline-wrap{position:relative;height:64px;background:#0d0d18;border-radius:8px;overflow:hidden;border:1px solid #1a1a2a}
 .tl-axis{position:absolute;top:50%;left:0;right:0;height:1px;background:#222}
 .tl-signal-line{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.25);z-index:2}
-.tl-label{position:absolute;bottom:2px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#555;z-index:3;transform:translateX(-50%)}
-.tl-label.top{bottom:auto;top:2px}
 .tl-bar{position:absolute;height:10px;border-radius:3px;z-index:4;opacity:.85;min-width:3px}
 .tl-bar.key-a{background:var(--accent)}
 .tl-bar.key-d{background:var(--purple)}
@@ -86,11 +103,6 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 .tl-marker.signal-mk{background:#fff;box-shadow:0 0 8px #fff}
 .tl-marker.space-mk{background:var(--warn);box-shadow:0 0 6px var(--warn)}
 .tl-prezone{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.03);z-index:1;border-right:1px dashed rgba(255,255,255,.12)}
-
-.tl-legend{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap}
-.tl-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#888;font-family:'JetBrains Mono',monospace}
-.tl-legend-item .sw{width:14px;height:6px;border-radius:2px;flex-shrink:0}
-.tl-legend-item .sw.circle{width:7px;height:7px;border-radius:50%}
 
 .btn-row{display:flex;flex-direction:column;align-items:center;margin-top:32px;gap:10px;padding-bottom:40px}
 .restart-btn{
@@ -108,51 +120,58 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 
 #mode3Area{position:fixed;inset:0;display:none;overflow:hidden;z-index:40}
 #mode3Canvas{width:100%;height:100%;display:block}
-.sliderRow{
-  margin-bottom:16px;
-}
-.sliderRow label{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:6px;
-  font-size:14px;
-  color:#aaa;
-}
-.sliderRow input{
-  width:100%;
-}
+.sliderRow{margin-bottom:16px}
+.sliderRow label{display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;color:#aaa}
+.sliderRow input{width:100%}
 </style>
 </head>
 
+<body>
+
+<div id="langSelector">
+  <button id="langMainBtn" onclick="toggleLangMenu()">Language / Язык</button>
+  <div id="langOptions">
+    <button onclick="setLanguage('ru')">Русский</button>
+    <button onclick="setLanguage('en')">English</button>
+  </div>
+</div>
+
+<button id="pauseBtn" onclick="togglePause()">МЕНЮ</button>
+
+<div id="pauseOverlay">
+  <h2 id="pauseTitle" style="font-size:32px;margin-bottom:10px">ПАУЗА</h2>
+  <button class="menu-btn" id="resumeBtn" onclick="togglePause()">ПРОДОЛЖИТЬ</button>
+  <button class="back-btn" id="pauseBackBtn" onclick="backToMenu()">В МЕНЮ</button>
+</div>
+
 <div id="mode3Settings" style="position:fixed;inset:0;z-index:1500;background:rgba(10,10,15,.97);display:none;align-items:center;justify-content:center;">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:420px;max-width:90vw;">
-    <h2 style="font-size:28px;margin-bottom:16px">Настройка ударов</h2>
+    <h2 id="settingsTitle" style="font-size:28px;margin-bottom:16px">Настройка ударов</h2>
     <div class="sliderRow">
-      <label>Мимо ворот: <b><span id="pOut">30</span>%</b></label>
+      <label><span id="labelOut">Мимо ворот</span>: <b><span id="pOut">30</span>%</b></label>
       <input type="range" min="0" max="100" value="30" id="outRange">
     </div>
     <div class="sliderRow">
-      <label>В створ (углы): <b><span id="pSide">50</span>%</b></label>
+      <label><span id="labelSide">В створ (углы)</span>: <b><span id="pSide">50</span>%</b></label>
       <input type="range" min="0" max="100" value="50" id="sideRange">
     </div>
     <div class="sliderRow">
-      <label>По центру: <b><span id="pCenter">20</span>%</b></label>
+      <label><span id="labelCenter">По центру</span>: <b><span id="pCenter">20</span>%</b></label>
       <input type="range" min="0" max="100" value="20" id="centerRange">
     </div>
     <button class="menu-btn" style="margin-top:20px" id="startMode3">
-      ОК
-      <span>Запустить режим</span>
+      OK
+      <span id="startMode3Sub">Запустить режим</span>
     </button>
   </div>
 </div>
 
-<body>
 <div id="menu">
   <h1>GK Reaction Test</h1>
-  <p>Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. Направление должно быть нажато до или одновременно с прыжком.</p>
-  <button class="menu-btn" id="mode1">Режим 1 — Сигнал<span>Сторона подсвечивается</span></button>
-  <button class="menu-btn" id="mode2">Режим 2 — Мяч<span>Мяч летит в угол</span></button>
-  <button class="menu-btn" id="mode3btn">Режим 3 — Ворота 3D<span>Мяч летит на тебя · 15 раундов</span></button>
+  <p id="menuDesc">Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. Направление должно быть нажато до или одновременно с прыжком.</p>
+  <button class="menu-btn" id="mode1">Режим 1 — Сигнал<span id="m1Sub">Сторона подсвечивается</span></button>
+  <button class="menu-btn" id="mode2">Режим 2 — Мяч<span id="m2Sub">Мяч летит в угол</span></button>
+  <button class="menu-btn" id="mode3btn">Режим 3 — Ворота 3D<span id="m3Sub">удары по воротам · 15 раундов</span></button>
 </div>
 
 <div id="hud"></div>
@@ -172,6 +191,59 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Outfit',sans-serif;height:100
 </div>
 
 <script>
+// ЛОКАЛИЗАЦИЯ
+const i18n = {
+  ru: {
+    menuDesc: "Нажми <b>A</b> или <b>D</b> чтобы выбрать сторону, затем <b>SPACE</b> чтобы прыгнуть. Направление должно быть нажато до или одновременно с прыжком.",
+    mode1: "Режим 1 — Сигнал", m1Sub: "Сторона подсвечивается",
+    mode2: "Режим 2 — Мяч", m2Sub: "Мяч летит в угол",
+    mode3: "Режим 3 — Ворота 3D", m3Sub: "удары по воротам · 15 раундов",
+    pause: "ПАУЗА", resume: "ПРОДОЛЖИТЬ", back: "В МЕНЮ", menuBtn: "МЕНЮ",
+    settings: "Настройка ударов", labelOut: "Мимо ворот", labelSide: "В створ (углы)", labelCenter: "По центру", startMode: "Запустить режим",
+    results: "Результаты", avgReaction: "Средняя реакция", restart: "Играть снова",
+    round: "Раунд", goal: "Цель", ms: "мс",
+    errSpaceOnly: "SPACE без направления", errEarlySpace: "SPACE раньше направления", errWrongSide: "Неверная сторона", errNoJump: "Не прыгнул!", errJumpOnOut: "Мяч мимо — не прыгай!",
+    okOut: "Мяч мимо — верно!", okLabel: "Верно",
+    tL: "← Левый угол", tR: "→ Правый угол", tC: "↑ Центр ворот", tOT: "⬆ Над воротами", tOL: "⬅ Слева от ворот", tOR: "➡ Справа от ворот"
+  },
+  en: {
+    menuDesc: "Press <b>A</b> or <b>D</b> to choose side, then <b>SPACE</b> to jump. Direction must be pressed before or at the same time as jump.",
+    mode1: "Mode 1 — Signal", m1Sub: "Side highlight",
+    mode2: "Mode 2 — Ball", m2Sub: "Ball flies to corner",
+    mode3: "Mode 3 — 3D Goals", m3Sub: "shots on goal · 15 rounds",
+    pause: "PAUSE", resume: "CONTINUE", back: "TO MENU", menuBtn: "MENU",
+    settings: "Shot Settings", labelOut: "Off-target", labelSide: "On-target (corners)", labelCenter: "Center", startMode: "Start Mode",
+    results: "Results", avgReaction: "Average reaction", restart: "Restart",
+    round: "Round", goal: "Target", ms: "ms",
+    errSpaceOnly: "SPACE without direction", errEarlySpace: "SPACE before direction", errWrongSide: "Wrong side", errNoJump: "No jump!", errJumpOnOut: "Off-target — don't jump!",
+    okOut: "Off-target — correct!", okLabel: "Correct",
+    tL: "← Left Corner", tR: "→ Right Corner", tC: "↑ Center", tOT: "⬆ Over Top", tOL: "⬅ Out Left", tOR: "➡ Out Right"
+  }
+};
+
+let curLang = 'ru';
+
+function toggleLangMenu() {
+  const opts = $('langOptions');
+  opts.style.display = opts.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function setLanguage(lang) {
+  curLang = lang;
+  const t = i18n[lang];
+  $('menuDesc').innerHTML = t.menuDesc;
+  $('mode1').firstChild.textContent = t.mode1; $('m1Sub').textContent = t.m1Sub;
+  $('mode2').firstChild.textContent = t.mode2; $('m2Sub').textContent = t.m2Sub;
+  $('mode3btn').firstChild.textContent = t.mode3; $('m3Sub').textContent = t.m3Sub;
+  $('pauseTitle').textContent = t.pause; $('resumeBtn').textContent = t.resume; 
+  $('pauseBackBtn').textContent = t.back; $('pauseBtn').textContent = t.menuBtn;
+  $('settingsTitle').textContent = t.settings; $('labelOut').textContent = t.labelOut;
+  $('labelSide').textContent = t.labelSide; $('labelCenter').textContent = t.labelCenter;
+  $('startMode3Sub').textContent = t.startMode;
+  $('langOptions').style.display = 'none';
+}
+
+// ОСНОВНАЯ ЛОГИКА
 let mode3Chances = { out: 30, side: 50, center: 20 };
 const $=id=>document.getElementById(id);
 let mode=1,attempts=0,maxAttempts=5;
@@ -187,6 +259,21 @@ let roundData=[];
 let reactions=[];
 const tolerance=20;
 let roundNeedsSpace=false;
+let isPaused = false;
+let roundTimeout = null;
+let m3AnimFrame=null;
+
+function togglePause() {
+  if (attempts >= maxAttempts) return;
+  isPaused = !isPaused;
+  $('pauseOverlay').style.display = isPaused ? 'flex' : 'none';
+  if (isPaused) {
+    if (roundTimeout) clearTimeout(roundTimeout);
+    if (m3AnimFrame) cancelAnimationFrame(m3AnimFrame);
+  } else {
+    startRound();
+  }
+}
 
 function resetGame(){
   attempts=0;roundData=[];reactions=[];
@@ -194,7 +281,8 @@ function resetGame(){
   $('resultsOverlay').classList.remove('show');
   $('left').classList.remove('active');$('right').classList.remove('active');
   $('ball').style.display='none';
-  recording=false;waiting=false;
+  recording=false;waiting=false;isPaused=false;
+  $('pauseOverlay').style.display='none';
   buildHud();
 }
 
@@ -207,6 +295,8 @@ function startGame(m){
   mode=m;
   maxAttempts = (mode===3) ? 15 : 5;
   $('menu').style.display='none';
+  $('langSelector').style.display='none';
+  $('pauseBtn').style.display='block';
   if(mode===3){
     $('gameArea').style.display='none';
     $('mode3Area').style.display='block';
@@ -223,6 +313,7 @@ $('mode1').onclick=()=>startGame(1);
 $('mode2').onclick=()=>startGame(2);
 $('mode3btn').onclick=()=>{
   $('menu').style.display='none';
+  $('langSelector').style.display='none';
   $('mode3Settings').style.display='flex';
 };
 
@@ -234,7 +325,6 @@ function initMode3Canvas(){
   M3.canvas=$('mode3Canvas');
   M3.ctx=M3.canvas.getContext('2d');
   resizeMode3();
-  window.removeEventListener('resize',resizeMode3);
   window.addEventListener('resize',resizeMode3);
 }
 
@@ -247,24 +337,11 @@ function resizeMode3(){
 }
 
 function getGoalGeometry(){
-  const W=M3.W,H=M3.H;
-  const cx=W/2;
-  const horizonY=H*0.18;
-  const crossbarY=H*0.28;
-  const crossbarHalf=W*0.450;
-  const postBaseY=H*0.84;
+  const W=M3.W,H=M3.H,cx=W/2;
+  const horizonY=H*0.18, crossbarY=H*0.28, crossbarHalf=W*0.450, postBaseY=H*0.84;
   const goalHeight=postBaseY-crossbarY;
   const postBaseHalf=crossbarHalf - Math.tan(5*Math.PI/180)*goalHeight;
-
-  return {cx,
-    tl:{x:cx-crossbarHalf, y:crossbarY},
-    tr:{x:cx+crossbarHalf, y:crossbarY},
-    bl:{x:cx-postBaseHalf, y:postBaseY},
-    br:{x:cx+postBaseHalf, y:postBaseY},
-    crossbarY, postBaseY, crossbarHalf, postBaseHalf,
-    goalLineY: postBaseY,
-    horizonY
-  };
+  return {cx, tl:{x:cx-crossbarHalf, y:crossbarY}, tr:{x:cx+crossbarHalf, y:crossbarY}, bl:{x:cx-postBaseHalf, y:postBaseY}, br:{x:cx+postBaseHalf, y:postBaseY}, crossbarY, postBaseY, crossbarHalf, postBaseHalf, horizonY};
 }
 
 function showIdleBall(){
@@ -274,43 +351,27 @@ function showIdleBall(){
 
 function drawMode3Scene(ballPos,impactDot){
   const ctx=M3.ctx,W=M3.W,H=M3.H;
-  const g=getGoalGeometry();
-
+  ctx.clearRect(0,0,W,H);
   if (stadiumImg.complete) {
-    const scale = Math.max(W / stadiumImg.width, H / stadiumImg.height);
-    const drawW = stadiumImg.width * scale;
-    const drawH = stadiumImg.height * scale;
-    ctx.drawImage(stadiumImg, (W - drawW) / 2, (H - drawH) / 2, drawW, drawH);
-  } else {
-    ctx.fillStyle = '#0b0f1a';
-    ctx.fillRect(0, 0, W, H);
-  }  
-
+    const scale = Math.max(W/stadiumImg.width, H/stadiumImg.height);
+    ctx.drawImage(stadiumImg, (W-stadiumImg.width*scale)/2, (H-stadiumImg.height*scale)/2, stadiumImg.width*scale, stadiumImg.height*scale);
+  } else { ctx.fillStyle='#0b0f1a'; ctx.fillRect(0,0,W,H); }  
   if(impactDot){
-    ctx.save();
-    ctx.shadowColor='rgba(0,229,255,1)';ctx.shadowBlur=50;
-    ctx.fillStyle='rgba(0,229,255,0.4)';
-    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,32,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-    ctx.fillStyle='#fff';
-    ctx.beginPath();ctx.arc(impactDot.x,impactDot.y,7,0,Math.PI*2);ctx.fill();
+    ctx.save(); ctx.shadowColor='rgba(0,229,255,1)'; ctx.shadowBlur=50; ctx.fillStyle='rgba(0,229,255,0.4)';
+    ctx.beginPath(); ctx.arc(impactDot.x,impactDot.y,32,0,Math.PI*2); ctx.fill(); ctx.restore();
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(impactDot.x,impactDot.y,7,0,Math.PI*2); ctx.fill();
   }
-
   if(ballPos){
-    const sz=ballPos.size||14;
-    ctx.fillStyle='rgba(0,0,0,0.15)';
-    ctx.beginPath();ctx.ellipse(ballPos.x,ballPos.y+sz*0.4,sz*0.7,sz*0.2,0,0,Math.PI*2);ctx.fill();
+    const sz=ballPos.size||14; ctx.fillStyle='rgba(0,0,0,0.15)';
+    ctx.beginPath(); ctx.ellipse(ballPos.x,ballPos.y+sz*0.4,sz*0.7,sz*0.2,0,0,Math.PI*2); ctx.fill();
     const bg=ctx.createRadialGradient(ballPos.x-sz*0.25,ballPos.y-sz*0.25,sz*0.1,ballPos.x,ballPos.y,sz);
-    bg.addColorStop(0,'#fff');bg.addColorStop(0.6,'#e8e8e8');bg.addColorStop(1,'#aaa');
-    ctx.fillStyle=bg;
-    ctx.beginPath();ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2);ctx.fill();
+    bg.addColorStop(0,'#fff'); bg.addColorStop(0.6,'#e8e8e8'); bg.addColorStop(1,'#aaa');
+    ctx.fillStyle=bg; ctx.beginPath(); ctx.arc(ballPos.x,ballPos.y,sz,0,Math.PI*2); ctx.fill();
   }
 }
 
 function getBallTargets(){
-  const g=getGoalGeometry();
-  const cx=g.cx;
-  const goalH=g.postBaseY-g.crossbarY;
+  const g=getGoalGeometry(), cx=g.cx, goalH=g.postBaseY-g.crossbarY;
   return {
     leftCorner: { x: g.bl.x + (g.br.x-g.bl.x)*0.08, y: g.crossbarY + goalH*0.55 },
     rightCorner: { x: g.br.x - (g.br.x-g.bl.x)*0.08, y: g.crossbarY + goalH*0.55 },
@@ -322,79 +383,56 @@ function getBallTargets(){
 }
 
 function getRandomMode3Target(){
-  const r=Math.random()*100;
-  const {out,side}=mode3Chances;
+  const r=Math.random()*100, {out,side}=mode3Chances;
   if(r<out) return ['OUT_TOP','OUT_LEFT','OUT_RIGHT'][Math.floor(Math.random()*3)];
   if(r<out+side) return Math.random()<0.5?'A':'D';
   return 'W';
 }
 
-let m3AnimFrame=null;
 function animateBallMode3(targetType,onDone){
-  const targets=getBallTargets();
-  const g=getGoalGeometry();
+  if(isPaused) return;
+  const targets=getBallTargets(), g=getGoalGeometry();
   let endPos;
-  let thisNeedsSpace=true;
-
   switch(targetType){
     case 'A':endPos=targets.leftCorner;break;
     case 'D':endPos=targets.rightCorner;break;
     case 'W':endPos=targets.center;break;
-    case 'OUT_TOP':endPos=targets.overTop;thisNeedsSpace=false;break;
-    case 'OUT_LEFT':endPos=targets.outLeft;thisNeedsSpace=false;break;
-    case 'OUT_RIGHT':endPos=targets.outRight;thisNeedsSpace=false;break;
+    case 'OUT_TOP':endPos=targets.overTop;break;
+    case 'OUT_LEFT':endPos=targets.outLeft;break;
+    case 'OUT_RIGHT':endPos=targets.outRight;break;
   }
-
-  roundNeedsSpace=thisNeedsSpace;
-  const startX=g.cx, startY=g.horizonY + 20;
-  const duration=700, startT=performance.now();
-  const impactPos = !thisNeedsSpace ? {x:endPos.x, y:endPos.y} : null;
-
+  roundNeedsSpace = !['OUT_TOP','OUT_LEFT','OUT_RIGHT'].includes(targetType);
+  const startX=g.cx, startY=g.horizonY + 20, duration=700, startT=performance.now();
+  const impactPos = !roundNeedsSpace ? {x:endPos.x, y:endPos.y} : null;
   function frame(now){
-    let t=(now-startT)/duration;
-    if(t>1)t=1;
-    const ease=1-Math.pow(1-t,3);
-    const x=startX+(endPos.x-startX)*ease, y=startY+(endPos.y-startY)*ease;
-    const size=4+(22-4)*ease;
+    if(isPaused) return;
+    let t=(now-startT)/duration; if(t>1)t=1;
+    const ease=1-Math.pow(1-t,3), x=startX+(endPos.x-startX)*ease, y=startY+(endPos.y-startY)*ease, size=4+(22-4)*ease;
     drawMode3Scene({x,y,size}, impactPos);
-    if(t<1) m3AnimFrame=requestAnimationFrame(frame);
-    else if(onDone) onDone();
+    if(t<1) m3AnimFrame=requestAnimationFrame(frame); else if(onDone) onDone();
   }
   m3AnimFrame=requestAnimationFrame(frame);
 }
 
-function clearMode3Ball(){
-  if(m3AnimFrame)cancelAnimationFrame(m3AnimFrame);
-  drawMode3Scene();
-}
-
-let m3SpacePressed=false;
-let m3TimeoutId=null;
+let m3SpacePressed=false, m3TimeoutId=null;
 
 function startRound(){
+  if(isPaused) return;
   if(attempts>=maxAttempts){showResults();return}
   $('left').classList.remove('active');$('right').classList.remove('active');
-  $('ball').style.display = 'none'; 
-  // Сбрасываем текст инфо-блока, но не скрываем сам контейнер
-  $('info').textContent = ''; 
-  $('info').style.opacity = '0'; 
-
-  firstDir = null; firstDirTime = null; spaceTime = null;
-  allKeySegments = []; allSpacePresses = [];
+  $('ball').style.display = 'none'; $('info').style.opacity = '0'; 
+  firstDir = null; firstDirTime = null; spaceTime = null; allKeySegments = []; allSpacePresses = [];
 
   if(mode===3){
-    clearMode3Ball(); showIdleBall();
-    roundStartTime = performance.now(); recording = true; waiting = false;
+    if(m3AnimFrame) cancelAnimationFrame(m3AnimFrame);
+    showIdleBall(); roundStartTime = performance.now(); recording = true; waiting = false;
     m3SpacePressed = false; roundNeedsSpace = false;
-    setTimeout(()=>{
+    roundTimeout = setTimeout(()=>{
       target = getRandomMode3Target(); signalTime = performance.now(); waiting = true;
       animateBallMode3(target, ()=>{
         if(!roundNeedsSpace){
           m3TimeoutId = setTimeout(()=>{
-            if(waiting){
-              waiting = false; recording = false;
-              finalizeKeys(performance.now()); evaluateMode3();
-            }
+            if(waiting && !isPaused){ waiting = false; recording = false; finalizeKeys(performance.now()); evaluateMode3(); }
           },1200);
         }
       });
@@ -403,7 +441,7 @@ function startRound(){
   }
 
   roundStartTime = performance.now(); recording = true; waiting = false;
-  setTimeout(()=>{
+  roundTimeout = setTimeout(()=>{
     target = Math.random()<.5 ? 'A' : 'D'; signalTime = performance.now(); waiting = true;
     if(mode===1) $(target==='A'?'left':'right').classList.add('active');
     if(mode===2){
@@ -416,154 +454,103 @@ function startRound(){
 }
 
 document.addEventListener('keydown',e=>{
-  if(!recording || e.repeat)return;
+  if(!recording || e.repeat || isPaused)return;
   const now=performance.now(), code=e.code;
   if((code==='KeyA'||code==='KeyD'||(code==='KeyW'&&mode===3))&&!allKeyDowns[code]){
     allKeyDowns[code]=now;
-    if(!firstDir&&waiting){
-      firstDir=code.replace('Key',''); firstDirTime=now;
-    }
+    if(!firstDir&&waiting){ firstDir=code.replace('Key',''); firstDirTime=now; }
   }
   if(code==='Space'){
     allSpacePresses.push(now);
     if(mode===3&&waiting){
       spaceTime=now; m3SpacePressed=true;
       if(!firstDir){
-        if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA'];}
-        else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD'];}
-        else if(allKeyDowns['KeyW']){firstDir='W';firstDirTime=allKeyDowns['KeyW'];}
+        if(allKeyDowns['KeyA']) {firstDir='A'; firstDirTime=allKeyDowns['KeyA'];}
+        else if(allKeyDowns['KeyD']) {firstDir='D'; firstDirTime=allKeyDowns['KeyD'];}
+        else if(allKeyDowns['KeyW']) {firstDir='W'; firstDirTime=allKeyDowns['KeyW'];}
       }
-      waiting=false; recording=false;
-      if(m3TimeoutId){clearTimeout(m3TimeoutId);m3TimeoutId=null;}
+      waiting=false; recording=false; if(m3TimeoutId)clearTimeout(m3TimeoutId);
       finalizeKeys(now); evaluateMode3(); return;
     }
     if(waiting&&!spaceTime){
       spaceTime=now;
       if(!firstDir){
-        if(allKeyDowns['KeyA']){firstDir='A';firstDirTime=allKeyDowns['KeyA'];}
-        else if(allKeyDowns['KeyD']){firstDir='D';firstDirTime=allKeyDowns['KeyD'];}
+        if(allKeyDowns['KeyA']) {firstDir='A'; firstDirTime=allKeyDowns['KeyA'];}
+        else if(allKeyDowns['KeyD']) {firstDir='D'; firstDirTime=allKeyDowns['KeyD'];}
       }
       waiting=false; recording=false; finalizeKeys(now); evaluate();
     }
   }
 });
 
-document.addEventListener('keyup',e=>{
-  const now=performance.now(), code=e.code;
-  if(allKeyDowns[code]){
-    allKeySegments.push({code,down:allKeyDowns[code],up:now});
-    delete allKeyDowns[code];
-  }
-});
+document.addEventListener('keyup',e=>{ if(allKeyDowns[e.code]){ allKeySegments.push({code:e.code,down:allKeyDowns[e.code],up:performance.now()}); delete allKeyDowns[e.code]; }});
 
-function finalizeKeys(endTime){
-  for(const code of Object.keys(allKeyDowns)) allKeySegments.push({code,down:allKeyDowns[code],up:endTime});
-  allKeyDowns={};
-}
+function finalizeKeys(endTime){ for(const code of Object.keys(allKeyDowns)) allKeySegments.push({code,down:allKeyDowns[code],up:endTime}); allKeyDowns={}; }
 
 function evaluateMode3(){
-  let result, ok=false;
+  let result, ok=false; const t = i18n[curLang];
   const reaction=spaceTime?Math.round(spaceTime-signalTime):null;
   if(!roundNeedsSpace){
-    if(m3SpacePressed) result='Мяч мимо — не прыгай!';
-    else { ok=true; result='Мяч мимо — верно!'; }
+    if(m3SpacePressed) result=t.errJumpOnOut; else { ok=true; result=t.okOut; }
   } else {
-    if(!m3SpacePressed) result='Не прыгнул!';
-    else if(!firstDir) result='SPACE без направления';
-    else if(spaceTime+tolerance<firstDirTime) result='SPACE раньше направления';
-    else if(firstDir!==target) result='Неверная сторона';
-    else { ok=true; if(reaction!==null)reactions.push(reaction); result=`${reaction} мс`; }
+    if(!m3SpacePressed) result=t.errNoJump;
+    else if(!firstDir) result=t.errSpaceOnly;
+    else if(spaceTime+tolerance<firstDirTime) result=t.errEarlySpace;
+    else if(firstDir!==target) result=t.errWrongSide;
+    else { ok=true; if(reaction!==null)reactions.push(reaction); result=`${reaction} ${t.ms}`; }
   }
-  
-  const dot=$('dot'+attempts);
-  if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
-  
-  let targetLabel = {A:'← Левый угол',D:'→ Правый угол',W:'↑ Центр ворот',OUT_TOP:'⬆ Над воротами',OUT_LEFT:'⬅ Слева от ворот',OUT_RIGHT:'➡ Справа от ворот'}[target];
-  roundData.push({
-    attempt:attempts+1,target,firstDir,ok,result,reactionMs:ok&&reaction?reaction:null,
-    signalRel:signalTime-roundStartTime,spaceRel:spaceTime?spaceTime-roundStartTime:null,
-    allSpaceRel:allSpacePresses.map(t=>t-roundStartTime),
-    segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})),
-    targetLabel
-  });
-
-  // ВЫВОД РЕЗУЛЬТАТА С ЦВЕТОМ
-  const infoEl = $('info');
-  infoEl.textContent = (ok ? '✅ ' : '❌ ') + result;
-  infoEl.style.opacity = '1';
-  if(ok) {
-    infoEl.style.color = '#00e676'; // Зеленый
-    infoEl.style.textShadow = '0 0 15px rgba(0,230,118,0.5)';
-  } else {
-    infoEl.style.color = '#ff3d71'; // Красный
-    infoEl.style.textShadow = '0 0 15px rgba(255,61,113,0.5)';
-  }
-
-  attempts++; 
-  setTimeout(startRound,1100);
+  processResult(ok, result, reaction);
 }
 
 function evaluate(){
-  let result, ok=false;
-  if(!firstDir) result='SPACE без направления';
-  else if(spaceTime+tolerance<firstDirTime) result='SPACE раньше направления';
-  else if(firstDir!==target) result='Неверная сторона';
-  else { const r=Math.round(spaceTime-signalTime); reactions.push(r); result=`${r} мс`; ok=true; }
-  
-  const dot=$('dot'+attempts);
-  if(dot){dot.classList.remove('current');dot.classList.add(ok?'success':'fail')}
-  
-  roundData.push({
-    attempt:attempts+1,target,firstDir,ok,result,reactionMs:ok?Math.round(spaceTime-signalTime):null,
-    signalRel:signalTime-roundStartTime,spaceRel:spaceTime?spaceTime-roundStartTime:null,
-    allSpaceRel:allSpacePresses.map(t=>t-roundStartTime),
-    segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime}))
-  });
+  let result, ok=false; const t = i18n[curLang];
+  if(!firstDir) result=t.errSpaceOnly;
+  else if(spaceTime+tolerance<firstDirTime) result=t.errEarlySpace;
+  else if(firstDir!==target) result=t.errWrongSide;
+  else { const r=Math.round(spaceTime-signalTime); reactions.push(r); result=`${r} ${t.ms}`; ok=true; }
+  processResult(ok, result, ok?Math.round(spaceTime-signalTime):null);
+}
 
-  const infoEl = $('info');
-  infoEl.textContent = (ok ? '✅ ' : '❌ ') + result;
-  infoEl.style.opacity = '1';
-  infoEl.style.color = ok ? '#00e676' : '#ff3d71';
-
-  attempts++; 
-  setTimeout(startRound,900);
+function processResult(ok, result, reactionMs){
+  const dot=$('dot'+attempts); if(dot){dot.classList.remove('current'); dot.classList.add(ok?'success':'fail')}
+  const t = i18n[curLang];
+  let targetLabel = {A:t.tL, D:t.tR, W:t.tC, OUT_TOP:t.tOT, OUT_LEFT:t.tOL, OUT_RIGHT:t.tOR}[target];
+  roundData.push({attempt:attempts+1, target, firstDir, ok, result, reactionMs, signalRel:signalTime-roundStartTime, spaceRel:spaceTime?spaceTime-roundStartTime:null, allSpaceRel:allSpacePresses.map(tm=>tm-roundStartTime), segments:allKeySegments.map(s=>({code:s.code,down:s.down-roundStartTime,up:s.up-roundStartTime})), targetLabel});
+  const infoEl = $('info'); infoEl.textContent = (ok ? '✅ ' : '❌ ') + result; infoEl.style.opacity = '1'; infoEl.style.color = ok ? '#00e676' : '#ff3d71';
+  attempts++; roundTimeout = setTimeout(startRound, mode===3?1100:900);
 }
 
 function showResults(){
-  $('info').textContent=''; 
-  $('info').style.opacity='0';
-  if(mode===3)$('mode3Area').style.display='none';
+  $('pauseBtn').style.display='none'; $('info').style.opacity='0'; if(mode===3)$('mode3Area').style.display='none';
   $('resultsOverlay').classList.add('show');
-  let avg=reactions.length?Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length)+' мс':'—';
-  let html=`<div class="res-title">Результаты</div><div class="res-avg">Средняя реакция: ${avg}</div>`;
+  const t = i18n[curLang];
+  let avg=reactions.length?Math.round(reactions.reduce((a,b)=>a+b,0)/reactions.length)+' '+t.ms:'—';
+  let html=`<div class="res-title">${t.results}</div><div class="res-avg">${t.avgReaction}: ${avg}</div>`;
   for(const rd of roundData) html+=buildRoundCard(rd);
-  html+=`<div class="btn-row"><button class="restart-btn" onclick="restartSameMode()">Играть снова</button><button class="back-btn" onclick="backToMenu()">В меню</button></div>`;
+  html+=`<div class="btn-row"><button class="restart-btn" onclick="restartSameMode()">${t.restart}</button><button class="back-btn" onclick="backToMenu()">${t.back}</button></div>`;
   $('resultsContent').innerHTML=html;
 }
 
 function buildRoundCard(rd){
-  const sig=rd.signalRel;
+  const sig=rd.signalRel, t=i18n[curLang];
   let maxT=sig+200, minT=0;
   for(const s of rd.segments) maxT=Math.max(maxT,s.up), minT=Math.min(minT,s.down);
   if(rd.spaceRel) maxT=Math.max(maxT,rd.spaceRel);
-  const range=maxT-minT+60;
-  const toP=t=>((t-minT+30)/range*100);
-
+  const range=maxT-minT+60, toP=tm=>((tm-minT+30)/range*100);
   let inner=`<div class="tl-prezone" style="left:0;width:${toP(sig)}%"></div><div class="tl-signal-line" style="left:${toP(sig)}%"></div><div class="tl-marker signal-mk" style="left:${toP(sig)}%"></div>`;
   for(const s of rd.segments){
     const cls={KeyA:'key-a',KeyD:'key-d',KeyW:'key-w'}[s.code];
     if(cls) inner+=`<div class="tl-bar ${cls}" style="left:${toP(s.down)}%;width:${Math.max(toP(s.up)-toP(s.down),0.5)}%;top:calc(50% + ${{KeyA:-14,KeyW:-2,KeyD:10}[s.code]}px)"></div>`;
   }
-  for(const t of rd.allSpaceRel) inner+=`<div class="tl-marker space-mk" style="left:${toP(t)}%"></div>`;
-
+  for(const tm of rd.allSpaceRel) inner+=`<div class="tl-marker space-mk" style="left:${toP(tm)}%"></div>`;
   return `<div class="round-card">
-    <div class="round-header"><span class="round-num">Раунд ${rd.attempt} · Цель: ${rd.targetLabel||rd.target}</span><span class="round-result ${rd.ok?'ok':'err'}">${rd.ok?'✅ '+(rd.reactionMs?rd.reactionMs+' мс':'Верно'):'❌ '+rd.result}</span></div>
+    <div class="round-header"><span class="round-num">${t.round} ${rd.attempt} · ${t.goal}: ${rd.targetLabel}</span><span class="round-result ${rd.ok?'ok':'err'}">${rd.ok?'✅ '+(rd.reactionMs?rd.reactionMs+' '+t.ms:t.okLabel):'❌ '+rd.result}</span></div>
     <div class="timeline-wrap"><div class="tl-axis"></div>${inner}</div>
   </div>`;
 }
 
-window.restartSameMode=()=>{ resetGame(); if(mode===3){$('mode3Area').style.display='block';initMode3Canvas();} startRound(); }
-window.backToMenu=()=>{ resetGame(); $('mode3Area').style.display='none'; $('gameArea').style.display='flex'; $('menu').style.display='flex'; }
+window.restartSameMode=()=>{ resetGame(); $('pauseBtn').style.display='block'; if(mode===3){$('mode3Area').style.display='block';initMode3Canvas();} startRound(); }
+window.backToMenu=()=>{ if(roundTimeout) clearTimeout(roundTimeout); resetGame(); $('pauseBtn').style.display='none'; $('langSelector').style.display='block'; $('mode3Area').style.display='none'; $('gameArea').style.display='flex'; $('menu').style.display='flex'; }
 
 const outR = $('outRange'), sideR = $('sideRange'), centerR = $('centerRange');
 function updatePercents(){
